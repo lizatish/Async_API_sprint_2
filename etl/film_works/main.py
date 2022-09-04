@@ -121,7 +121,7 @@ def main():
     storage = JsonFileStorage(conf.PATH_TO_STORAGE_JSON)
     state = State(storage)
     portion_size = conf.DATA_BATCH_SIZE
-    es = Elasticsearch(f"http://{conf.ELASTIC_HOST}:{conf.ELASTIC_PORT}")
+    es = Elasticsearch(f'http://{conf.ELASTIC_HOST}:{conf.ELASTIC_PORT}')
     with pg_conn:
         while True:
             run_universal_etl(

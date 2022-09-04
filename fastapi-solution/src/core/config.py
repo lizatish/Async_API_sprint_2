@@ -41,4 +41,5 @@ class Settings(BaseSettings):
 
 @lru_cache()
 def get_settings():
+    """Возвращает настройки тестов."""
     return Settings()

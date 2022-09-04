@@ -1,12 +1,12 @@
 import asyncio
-from typing import List, AsyncIterator
+from asyncio.unix_events import _UnixSelectorEventLoop
+from typing import List, AsyncIterator, Callable
 
 import pytest
 import pytest_asyncio
 from aioredis import create_redis_pool, Redis
 from elasticsearch import AsyncElasticsearch
 from elasticsearch.helpers import async_bulk
-from fastapi.testclient import TestClient
 from httpx import AsyncClient
 
 from db import elastic
@@ -14,14 +14,17 @@ from db import redis
 from main import app
 from tests.functional.config import get_settings
 from tests.functional.testdata.es_mapping import es_film_works_data
-from tests.functional.utils.elastic import get_es_fw_bulk_query
+from tests.functional.utils.helpers import get_es_fw_bulk_query
 
 conf = get_settings()
 
 
 @pytest.fixture
-def es_write_data(es_client):
+def es_write_data(es_client: AsyncElasticsearch) -> Callable:
+    """Фикстура записи данных в es."""
+
     async def inner(data: List[dict]):
+        """Внутренний метод для записи списка данных одним запросом в es."""
         await async_bulk(
             es_client,
             get_es_fw_bulk_query(
@@ -35,7 +38,8 @@ def es_write_data(es_client):
 
 
 @pytest_asyncio.fixture
-async def es_client():
+async def es_client() -> AsyncElasticsearch:
+    """Фикстура соединения с es."""
     client = AsyncElasticsearch(hosts=[f'http://{conf.ELASTIC_HOST}:{conf.ELASTIC_PORT}'])
     yield client
     await client.close()
@@ -43,6 +47,7 @@ async def es_client():
 
 @pytest_asyncio.fixture
 async def redis_pool() -> AsyncIterator[Redis]:
+    """Фикстура соединения с redis."""
     pool = await create_redis_pool((conf.REDIS_HOST, conf.REDIS_PORT), minsize=10, maxsize=20)
     yield pool
     pool.close()
@@ -50,27 +55,25 @@ async def redis_pool() -> AsyncIterator[Redis]:
 
 
 @pytest.fixture
-def event_loop():
+def event_loop() -> _UnixSelectorEventLoop:
+    """Фикстура главного цикла событий."""
     loop = asyncio.get_event_loop()
     yield loop
     loop.close()
 
 
 @pytest.fixture
-async def film_works_es_writer(es_write_data):
-    await es_write_data(es_film_works_data)
-
-
-@pytest.fixture
-def api_client(event_loop, es_client, redis_pool) -> TestClient:
+def api_client(event_loop: _UnixSelectorEventLoop, es_client: AsyncElasticsearch, redis_pool: Redis) -> AsyncClient:
+    """Фикстура апи-клиента с моком es и redis."""
     elastic.es = es_client
     redis.redis = redis_pool
-    client = AsyncClient(app=app, base_url="http://localhost")
+    client = AsyncClient(app=app, base_url=conf.BASE_URL)
     yield client
     event_loop.run_until_complete(client.aclose())
 
 
 @pytest_asyncio.fixture
-async def film_works_api_client(api_client, film_works_es_writer):
-    await film_works_es_writer
+async def film_works_api_client(api_client: AsyncClient, es_write_data: Callable) -> AsyncClient:
+    """Фикстура апи-клиента с заполненными данными es для тестирования фильмов."""
+    await es_write_data(es_film_works_data)
     yield api_client

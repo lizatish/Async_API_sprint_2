@@ -22,6 +22,7 @@ class Settings(BaseSettings):
 
     # Корень проекта
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    BASE_URL: str = 'http://localhost'
 
     # Время хранения данных в кэше
     FILM_CACHE_EXPIRE_IN_SECONDS: int = 60 * 5
@@ -37,4 +38,5 @@ class Settings(BaseSettings):
 
 @lru_cache()
 def get_settings():
+    """Возвращает настройки тестов."""
     return Settings()
