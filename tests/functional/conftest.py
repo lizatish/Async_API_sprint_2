@@ -9,6 +9,7 @@ from httpx import AsyncClient
 
 from main import app
 from tests.functional.config import get_settings
+from tests.functional.testdata.es_mapping import test_data_for_film_search
 from tests.functional.utils.elastic import get_es_bulk_query
 
 conf = get_settings()
@@ -53,3 +54,8 @@ def event_loop():
     loop = asyncio.get_event_loop()
     yield loop
     loop.close()
+
+
+@pytest.fixture(scope="module")
+def film_works_es_writer(es_write_data):
+    await es_write_data(test_data_for_film_search)
