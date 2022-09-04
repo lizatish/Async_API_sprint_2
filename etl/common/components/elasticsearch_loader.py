@@ -8,7 +8,6 @@ from elasticsearch.helpers import bulk
 
 from common.logger import get_logger
 from common.postgres_utils import backoff
-from genres.settings import conf
 
 logger = get_logger()
 

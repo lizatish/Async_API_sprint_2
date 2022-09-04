@@ -16,13 +16,9 @@ services:
       discovery.type: single-node
     ports:
       - "9200:9200"
-    volumes:
-      - esdata:/usr/share/elasticsearch/data
 
   test-redis:
     image: redis
-    volumes:
-      - redisdata:/data
     ports:
       - "6379:6379"
     restart: always
@@ -39,9 +35,3 @@ services:
     env_file:
       - .env
     restart: always
-
-volumes:
-  esdata:
-    driver: local
-  redisdata:
-    driver: local

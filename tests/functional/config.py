@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     # Настройки Elasticsearch
     ELASTIC_HOST: str = 'localhost'
     ELASTIC_PORT: int = 9200
+    ELASTIC_INDEX: str = 'movies'
+    ELASTIC_ID_FIELD_NAME: str = 'id'
 
     # Корень проекта
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
