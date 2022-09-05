@@ -6,18 +6,20 @@ from pydantic import BaseSettings
 class ETLSettings(BaseSettings):
     """Настройки приложения."""
 
-    postgres_db_name: str
-    postgres_db_user: str
-    postgres_db_password: str
-    postgres_db_host: str = 'postgres'
-    postgres_db_port: int = 5432
+    POSTGRES_DB_NAME: str
+    POSTGRES_DB_USER: str
+    POSTGRES_DB_PASSWORD: str
+    POSTGRES_DB_HOST: str = 'postgres'
+    POSTGRES_DB_PORT: int = 5432
 
-    data_batch_size: int = 50
+    DATA_BATCH_SIZE: int = 50
 
-    elastic_url: str = 'http://localhost:9200/'
-    path_to_storage_json: str = 'storage.json'
+    ELASTIC_HOST: str = 'elastic'
+    ELASTIC_PORT: int = 9200
 
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    PATH_TO_STORAGE_JSON: str = 'storage.json'
+
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     class Config:
         """Дополнительные базовые настройки."""

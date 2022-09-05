@@ -39,9 +39,10 @@ class GenreService:
                     },
                 )
                 genre_docs = docs['hits']['hits']
-                for genre_doc in genre_docs:
-                    genres.append(Genre(**genre_doc['_source']))
-                await self._put_genres_to_cache(genres, url)
+                if genre_docs:
+                    for genre_doc in genre_docs:
+                        genres.append(Genre(**genre_doc['_source']))
+                    await self._put_genres_to_cache(genres, url)
             except NotFoundError:
                 pass
 

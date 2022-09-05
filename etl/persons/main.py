@@ -47,18 +47,18 @@ def run_persons_etl(
 def main():
     """Главная функция запуска приложения."""
     dsl = {
-        'dbname': conf.postgres_db_name,
-        'user': conf.postgres_db_user,
-        'password': conf.postgres_db_password,
-        'host': conf.postgres_db_host,
-        'port': conf.postgres_db_port,
+        'dbname': conf.POSTGRES_DB_NAME,
+        'user': conf.POSTGRES_DB_USER,
+        'password': conf.POSTGRES_DB_PASSWORD,
+        'host': conf.POSTGRES_DB_HOST,
+        'port': conf.POSTGRES_DB_PORT,
     }
     pg_conn = create_pg_connection(dsl)
 
-    storage = JsonFileStorage(conf.path_to_storage_json)
+    storage = JsonFileStorage(conf.PATH_TO_STORAGE_JSON)
     state = State(storage)
-    portion_size = conf.data_batch_size
-    es = Elasticsearch(conf.elastic_url)
+    portion_size = conf.DATA_BATCH_SIZE
+    es = Elasticsearch(f'http://{conf.ELASTIC_HOST}:{conf.ELASTIC_PORT}')
     with pg_conn:
         while True:
             run_persons_etl(es, pg_conn, portion_size, state)

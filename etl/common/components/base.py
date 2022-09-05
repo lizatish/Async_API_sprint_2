@@ -98,7 +98,7 @@ class BaseProducer(BaseExtractor):
             updated_at_from_field = ''
             if start_from:
                 updated_at_from_field = f"WHERE updated_at >= '{start_from}'"
-            sql = cursor.mogrify(f"""SELECT * FROM {self.table_name}
+            sql = cursor.mogrify(f"""SELECT * FROM content.{self.table_name}
             {updated_at_from_field} ORDER BY updated_at;""")
             self.execute(cursor, sql)
 

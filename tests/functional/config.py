@@ -1,31 +1,33 @@
 import os
 from functools import lru_cache
-from logging import config as logging_config
 
 from pydantic import BaseSettings
-
-from core.logger import LOGGING
 
 
 class Settings(BaseSettings):
     """Настройки приложения."""
 
-    # Применяем настройки логирования
-    logging_config.dictConfig(LOGGING)
-
     # Название проекта. Используется в Swagger-документации
     PROJECT_NAME: str = 'movies'
 
     # Настройки Redis
-    REDIS_HOST: str = 'redis'
+    REDIS_HOST: str = 'localhost'
     REDIS_PORT: int = 6379
-
-    # Настройки Elasticsearch
-    ELASTIC_HOST: str = 'elastic'
-    ELASTIC_PORT: int = 9200
 
     # Корень проекта
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    BASE_URL: str = 'http://localhost'
+
+    # Настройки Elasticsearch
+    ELASTIC_HOST: str = 'localhost'
+    ELASTIC_PORT: int = 9200
+    ELASTIC_FILM_WORKS_INDEX: str = 'movies'
+    ELASTIC_PERSONS_INDEX: str = 'persons'
+    ELASTIC_GENRES_INDEX: str = 'genres'
+    ELASTIC_ID_FIELD_NAME: str = 'id'
+    ELASTIC_GENRES_INDEX_FILE: str = BASE_DIR + '/functional/indices/genre.json'
+    ELASTIC_PERSONS_INDEX_FILE: str = BASE_DIR + '/functional/indices/persons.json'
+    ELASTIC_FILM_WORKS_INDEX_FILE: str = BASE_DIR + '/functional/indices/movies.json'
 
     # Время хранения данных в кэше
     FILM_CACHE_EXPIRE_IN_SECONDS: int = 60 * 5
