@@ -34,7 +34,7 @@ async def create_index(es, index_name, index_json_path):
             )
 
 
-@pytest_asyncio.fixture()
+@pytest_asyncio.fixture(scope="session")
 async def es_write_data(es_client: AsyncElasticsearch) -> Callable:
     """Фикстура записи данных в es."""
 
@@ -53,7 +53,7 @@ async def es_write_data(es_client: AsyncElasticsearch) -> Callable:
     return inner
 
 
-@pytest_asyncio.fixture()
+@pytest_asyncio.fixture(scope="session")
 async def es_client() -> AsyncElasticsearch:
     """Фикстура соединения с es."""
     client = AsyncElasticsearch(hosts=[f'http://{conf.ELASTIC_HOST}:{conf.ELASTIC_PORT}'])
@@ -61,7 +61,7 @@ async def es_client() -> AsyncElasticsearch:
     await client.close()
 
 
-@pytest_asyncio.fixture()
+@pytest_asyncio.fixture(scope="session")
 async def redis_pool() -> AsyncIterator[Redis]:
     """Фикстура соединения с redis."""
     pool = await create_redis_pool((conf.REDIS_HOST, conf.REDIS_PORT), minsize=10, maxsize=20)
@@ -70,7 +70,7 @@ async def redis_pool() -> AsyncIterator[Redis]:
     await pool.wait_closed()
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def event_loop() -> _UnixSelectorEventLoop:
     """Фикстура главного цикла событий."""
     loop = asyncio.get_event_loop()
@@ -78,7 +78,7 @@ def event_loop() -> _UnixSelectorEventLoop:
     loop.close()
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def api_client(event_loop: _UnixSelectorEventLoop, es_client: AsyncElasticsearch, redis_pool: Redis) -> AsyncClient:
     """Фикстура апи-клиента с моком es и redis."""
     elastic.es = es_client
@@ -88,14 +88,14 @@ def api_client(event_loop: _UnixSelectorEventLoop, es_client: AsyncElasticsearch
     event_loop.run_until_complete(client.aclose())
 
 
-@pytest_asyncio.fixture()
+@pytest_asyncio.fixture(scope="session")
 async def film_works_api_client(api_client: AsyncClient, es_write_data: Callable) -> AsyncClient:
     """Фикстура апи-клиента с заполненными данными es для тестирования фильмов."""
     await es_write_data(es_film_works_data, conf.ELASTIC_FILM_WORKS_INDEX, conf.ELASTIC_FILM_WORKS_INDEX_FILE)
     yield api_client
 
 
-@pytest_asyncio.fixture()
+@pytest_asyncio.fixture(scope="session")
 async def persons_api_client(
         api_client: AsyncClient,
         es_write_data: Callable,
@@ -106,7 +106,7 @@ async def persons_api_client(
     yield api_client
 
 
-@pytest_asyncio.fixture()
+@pytest_asyncio.fixture(scope="session")
 async def genres_api_client(api_client: AsyncClient, es_write_data: Callable) -> AsyncClient:
     """Фикстура апи-клиента с заполненными данными es для тестирования жанров."""
     await es_write_data(es_genres_data, conf.ELASTIC_GENRES_INDEX, conf.ELASTIC_GENRES_INDEX_FILE)
