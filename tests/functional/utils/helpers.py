@@ -1,7 +1,7 @@
 from typing import List, Generator
 
 
-def get_es_fw_bulk_query(es_data: List, es_index: str, es_id_field: str) -> Generator[dict]:
+def get_es_fw_bulk_query(es_data: List, es_index: str, es_id_field: str) -> Generator:
     """Генерирует документы для единовременной записи в es."""
     for doc in es_data:
         yield {
