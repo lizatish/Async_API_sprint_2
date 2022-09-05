@@ -55,7 +55,7 @@ es_film_works_data = [
                 'name': 'Martin Denning',
             },
         ],
-        'directors_names': ['Martin Denning']
+        'directors_names': ['Martin Denning'],
     },
     {
         'id': 'b1a2aae8-5c9e-4583-b89e-883c0d0c969a',
