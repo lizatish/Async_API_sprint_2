@@ -73,7 +73,8 @@ class FilmService:
                 for doc in docs['hits']['hits']:
                     source = doc['_source']
                     films.append(Film(**source))
-                await self._put_films_to_cache(films, f'film_by_person_{person_id}')
+                if films:
+                    await self._put_films_to_cache(films, f'film_by_person_{person_id}')
             except NotFoundError:
                 pass
         return films
@@ -98,7 +99,6 @@ class FilmService:
                 for person_id in person_ids:
                     person = await self._prepare_person(person_id, docs)
                     persons.append(person)
-                await self._put_persons_to_cache(persons, '-'.join(person_ids))
             except NotFoundError:
                 pass
         return persons
@@ -243,15 +243,20 @@ class FilmService:
                 else:
                     persons_roles[role]['fw_ids'].append(source['id'])
 
-        for role, role_data in persons_roles.items():
-            person_film = PersonFilm(role=role[:-1], film_ids=role_data['fw_ids'])
-            if not person:
-                person = Person(
-                    id=role_data['id'],
-                    full_name=role_data['full_name'],
-                    films=[person_film])
-            else:
-                person.films.append(person_film)
+            for role, role_data in persons_roles.items():
+                person_film = PersonFilm(role=role[:-1], film_ids=set(role_data['fw_ids']))
+                if not person:
+                    person = Person(
+                        id=role_data['id'],
+                        full_name=role_data['full_name'],
+                        films=[person_film])
+                else:
+                    for ix, exists_person_film in enumerate(person.films):
+                        if exists_person_film.role == role[:-1]:
+                            person.films[ix].film_ids |= set(role_data['fw_ids'])
+                            break
+                    else:
+                        person.films.append(person_film)
 
         return person
 
@@ -259,6 +264,7 @@ class FilmService:
         """Возвращает результат запроса к elastic для поиска персон."""
         return await self.elastic.search(
             index=self.es_index,
+            size=conf.ELASTIC_DEFAULT_OUTPUT_RECORDS_SIZE,
             body={
                 'query': {
                     'bool': {
@@ -322,14 +328,6 @@ class FilmService:
             return None
         persons = [Person.parse_raw(item) for item in data]
         return list(reversed(persons))
-
-    async def _put_persons_to_cache(self, persons: List[Person], url: str):
-        """Функция кладёт список персон в кэш."""
-        data = [item.json() for item in persons]
-        await self.cache.lpush(
-            url, *data,
-        )
-        await self.cache.expire(url, conf.PERSON_CACHE_EXPIRE_IN_SECONDS)
 
     async def _put_person_to_cache(self, person: Person):
         """Получает персону из кеша редиса."""
