@@ -73,7 +73,8 @@ class FilmService:
                 for doc in docs['hits']['hits']:
                     source = doc['_source']
                     films.append(Film(**source))
-                await self._put_films_to_cache(films, f'film_by_person_{person_id}')
+                if films:
+                    await self._put_films_to_cache(films, f'film_by_person_{person_id}')
             except NotFoundError:
                 pass
         return films
@@ -244,14 +245,19 @@ class FilmService:
                     persons_roles[role]['fw_ids'].append(source['id'])
 
         for role, role_data in persons_roles.items():
-            person_film = PersonFilm(role=role[:-1], film_ids=role_data['fw_ids'])
+            person_film = PersonFilm(role=role[:-1], film_ids=set(role_data['fw_ids']))
             if not person:
                 person = Person(
                     id=role_data['id'],
                     full_name=role_data['full_name'],
                     films=[person_film])
             else:
-                person.films.append(person_film)
+                for ix, exists_person_film in enumerate(person.films):
+                    if exists_person_film.role == role[:-1]:
+                        person.films[ix].film_ids |= set(role_data['fw_ids'])
+                        break
+                else:
+                    person.films.append(person_film)
 
         return person
 
@@ -259,6 +265,7 @@ class FilmService:
         """Возвращает результат запроса к elastic для поиска персон."""
         return await self.elastic.search(
             index=self.es_index,
+            size=conf.ELASTIC_DEFAULT_OUTPUT_RECORDS_SIZE,
             body={
                 'query': {
                     'bool': {

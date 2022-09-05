@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, Request, Query
+from fastapi import APIRouter, Depends, Request
 
 from api.v1.errors import PersonNotFound
 from api.v1.schemas.persons import FilmByPerson, Person
@@ -43,7 +43,7 @@ async def films_by_person(
 @router.get('/search', response_model=List[Person], summary='Найти участников фильма')
 async def search_persons(
         request: Request,
-        query: str = Query(..., description='Поисковой запрос'),
+        query: str = None,
         paginator: Paginator = Depends(),
         person_service: PersonService = Depends(get_person_service),
         film_service: FilmService = Depends(get_film_service),
@@ -64,7 +64,7 @@ async def search_persons(
 
     person_ids = [person.id for person in persons]
     fw_person_info = await film_service.get_person_by_ids(person_ids)
-    full_persons = await person_service.enrich_persons_list_data(persons, fw_person_info)
+    full_persons = await person_service.enrich_persons_list_data(persons, fw_person_info, url=request.url._url)
 
     return [
         Person(

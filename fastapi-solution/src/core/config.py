@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     # Настройки Elasticsearch
     ELASTIC_HOST: str = 'elastic'
     ELASTIC_PORT: int = 9200
+    ELASTIC_DEFAULT_OUTPUT_RECORDS_SIZE: int = 10000
 
     # Корень проекта
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
