@@ -70,6 +70,12 @@ async def redis_pool() -> AsyncIterator[Redis]:
     await pool.wait_closed()
 
 
+@pytest_asyncio.fixture
+async def redis_flushall(redis_pool):
+    """Фикстура, удаляющая кеш редиса."""
+    redis_pool.flushall()
+
+
 @pytest.fixture(scope="session")
 def event_loop() -> _UnixSelectorEventLoop:
     """Фикстура главного цикла событий."""
