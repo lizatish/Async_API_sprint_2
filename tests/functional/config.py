@@ -1,3 +1,4 @@
+import logging
 import os
 from functools import lru_cache
 
@@ -10,16 +11,19 @@ class Settings(BaseSettings):
     # Название проекта. Используется в Swagger-документации
     PROJECT_NAME: str = 'movies'
 
+    # Настройки логирования
+    LOG_LEVEL: int = logging.DEBUG
+
     # Настройки Redis
-    REDIS_HOST: str = 'localhost'
+    REDIS_HOST: str = 'test-redis'
     REDIS_PORT: int = 6379
 
     # Корень проекта
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    BASE_URL: str = 'http://localhost'
+    BASE_URL: str = 'http://test-api_service'
 
     # Настройки Elasticsearch
-    ELASTIC_HOST: str = 'localhost'
+    ELASTIC_HOST: str = 'test-elastic'
     ELASTIC_PORT: int = 9200
     ELASTIC_FILM_WORKS_INDEX: str = 'movies'
     ELASTIC_PERSONS_INDEX: str = 'persons'
