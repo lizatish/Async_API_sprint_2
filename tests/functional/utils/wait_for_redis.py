@@ -19,7 +19,7 @@ backoff_logger = logging.getLogger(__name__)
 async def connect_redis():
     """Ожидание подключения к redis"""
     redis_client = await aioredis.create_redis_pool(
-        (conf.REDIS_HOST, conf.REDIS_PORT), minsize=10, maxsize=20, encoding='utf-8',
+        (conf.CACHE_HOST, conf.CACHE_PORT), minsize=10, maxsize=20, encoding='utf-8',
     )
     logger.debug('Connection established!')
     redis_client.close()

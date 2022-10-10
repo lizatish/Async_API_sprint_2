@@ -19,7 +19,7 @@ logger = get_logger()
 )
 async def connect_es():
     """Ожидает подключения к es."""
-    es_client = AsyncElasticsearch(hosts=[f'http://{conf.ELASTIC_HOST}:{conf.ELASTIC_PORT}'])
+    es_client = AsyncElasticsearch(hosts=[f'http://{conf.SEARCH_ENGINE_HOST}:{conf.SEARCH_ENGINE_PORT}'])
     await es_client.perform_request('HEAD', '/')
     logger.debug('Connection established!')
     await es_client.close()

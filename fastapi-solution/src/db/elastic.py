@@ -1,11 +1,11 @@
 from typing import Optional
 
-from elasticsearch import AsyncElasticsearch
+from db.storage import AsyncSearchEngine
 
-es: Optional[AsyncElasticsearch] = None
+es: Optional[AsyncSearchEngine] = None
 
 
 # Функция понадобится при внедрении зависимостей
-async def get_elastic() -> AsyncElasticsearch:
+async def get_elastic() -> AsyncSearchEngine:
     """Возвращает экземпляр es."""
     return es
