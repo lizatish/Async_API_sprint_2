@@ -16,9 +16,9 @@ class Settings(BaseSettings):
     # Название проекта. Используется в Swagger-документации
     PROJECT_NAME: str = 'movies'
 
-    # Настройки Redis
-    REDIS_HOST: str = 'redis'
-    REDIS_PORT: int = 6379
+    # Настройки кеширования
+    CACHE_HOST: str = 'redis'
+    CACHE_PORT: int = 6379
 
     # Настройки Elasticsearch
     ELASTIC_HOST: str = 'elastic'

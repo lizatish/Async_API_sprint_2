@@ -1,13 +1,13 @@
 from functools import lru_cache
 from typing import Optional, List
 
-from aioredis import Redis
 from elasticsearch import AsyncElasticsearch, NotFoundError
 from fastapi import Depends
 
 from core.config import get_settings
 from db.elastic import get_elastic
 from db.redis import get_redis
+from db.storage import AsyncCacheStorage
 from models.main import Genre
 
 conf = get_settings()
@@ -16,9 +16,9 @@ conf = get_settings()
 class GenreService:
     """Сервис для работы с жанрами."""
 
-    def __init__(self, redis: Redis, elastic: AsyncElasticsearch):
+    def __init__(self, cache: AsyncCacheStorage, elastic: AsyncElasticsearch):
         """Инициализация сервиса."""
-        self.redis = redis
+        self.cache = cache
         self.elastic = elastic
 
         self.es_index = 'genres'
@@ -88,7 +88,7 @@ class GenreService:
         return genre
 
     async def _genre_from_cache(self, genre_id: str) -> Optional[Genre]:
-        data = await self.redis.get(genre_id)
+        data = await self.cache.get(genre_id)
         if not data:
             return None
 
@@ -96,11 +96,11 @@ class GenreService:
         return genre
 
     async def _put_genre_to_cache(self, genre: Genre):
-        await self.redis.set(genre.id, genre.json(), expire=conf.GENRE_CACHE_EXPIRE_IN_SECONDS)
+        await self.cache.set(genre.id, genre.json(), expire=conf.GENRE_CACHE_EXPIRE_IN_SECONDS)
 
     async def _genres_from_cache(self, url: str):
         """Функция отдаёт список жанров если они есть в кэше."""
-        data = await self.redis.lrange(url, 0, -1)
+        data = await self.cache.lrange(url, 0, -1)
         if not data:
             return None
         genres = [Genre.parse_raw(item) for item in data]
@@ -109,15 +109,15 @@ class GenreService:
     async def _put_genres_to_cache(self, genres: List[Genre], url: str):
         """Функция кладёт список жанров в кэш."""
         data = [item.json() for item in genres]
-        await self.redis.lpush(
+        await self.cache.lpush(
             url, *data,
         )
-        await self.redis.expire(url, conf.GENRE_CACHE_EXPIRE_IN_SECONDS)
+        await self.cache.expire(url, conf.GENRE_CACHE_EXPIRE_IN_SECONDS)
 
 
 @lru_cache()
 def get_genre_service(
-        redis: Redis = Depends(get_redis),
+        redis: AsyncCacheStorage = Depends(get_redis),
         elastic: AsyncElasticsearch = Depends(get_elastic),
 ) -> GenreService:
     """Возвращает экземпляр сервиса для работы с жанрами."""
