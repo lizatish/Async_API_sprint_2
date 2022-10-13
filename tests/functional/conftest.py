@@ -64,7 +64,7 @@ async def es_client() -> AsyncElasticsearch:
 @pytest_asyncio.fixture(scope="session")
 async def redis_pool() -> AsyncIterator[Redis]:
     """Фикстура соединения с redis."""
-    pool = await create_redis_pool((conf.REDIS_HOST, conf.REDIS_PORT), minsize=10, maxsize=20)
+    pool = await create_redis_pool((conf.CACHE_HOST, conf.CACHE_PORT), minsize=10, maxsize=20)
     yield pool
     pool.close()
     await pool.wait_closed()
@@ -88,7 +88,7 @@ def event_loop() -> AbstractEventLoop:
 def api_client(event_loop: AbstractEventLoop, es_client: AsyncElasticsearch, redis_pool: Redis) -> AsyncClient:
     """Фикстура апи-клиента с моком es и redis."""
     elastic.es = es_client
-    redis.redis = redis_pool
+    redis.cache = redis_pool
     client = AsyncClient(app=app, base_url=conf.BASE_URL)
     yield client
     event_loop.run_until_complete(client.aclose())

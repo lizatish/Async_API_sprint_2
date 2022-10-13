@@ -15,8 +15,8 @@ class Settings(BaseSettings):
     LOG_LEVEL: int = logging.DEBUG
 
     # Настройки Redis
-    REDIS_HOST: str = 'test-redis'
-    REDIS_PORT: int = 6379
+    CACHE_HOST: str = 'test-redis'
+    CACHE_PORT: int = 6379
 
     # Корень проекта
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
