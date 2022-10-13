@@ -1,6 +1,6 @@
 import asyncio
 import json
-from asyncio.unix_events import _UnixSelectorEventLoop
+from asyncio import AbstractEventLoop
 from typing import List, AsyncIterator, Callable
 
 import pytest
@@ -77,7 +77,7 @@ async def redis_flushall(redis_pool):
 
 
 @pytest.fixture(scope="session")
-def event_loop() -> _UnixSelectorEventLoop:
+def event_loop() -> AbstractEventLoop:
     """Фикстура главного цикла событий."""
     loop = asyncio.get_event_loop()
     yield loop
@@ -85,7 +85,7 @@ def event_loop() -> _UnixSelectorEventLoop:
 
 
 @pytest.fixture(scope="session")
-def api_client(event_loop: _UnixSelectorEventLoop, es_client: AsyncElasticsearch, redis_pool: Redis) -> AsyncClient:
+def api_client(event_loop: AbstractEventLoop, es_client: AsyncElasticsearch, redis_pool: Redis) -> AsyncClient:
     """Фикстура апи-клиента с моком es и redis."""
     elastic.es = es_client
     redis.redis = redis_pool

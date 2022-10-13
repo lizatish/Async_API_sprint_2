@@ -1,21 +1,29 @@
 import asyncio
-import time
+import logging
 
 import aioredis
 
 from tests.functional.config import get_settings
+from tests.functional.logger import get_logger
+from tests.functional.utils.connection import backoff
 
 conf = get_settings()
+logger = get_logger()
+backoff_logger = logging.getLogger(__name__)
 
 
+@backoff(
+    Exception,
+    backoff_logger=logger,
+)
 async def connect_redis():
     """Ожидание подключения к redis"""
-    redis_client = await aioredis.create_redis_pool((conf.REDIS_HOST, conf.REDIS_PORT), minsize=10, maxsize=20)
-    while True:
-        if redis_client.ping():
-            break
-        time.sleep(1)
+    redis_client = await aioredis.create_redis_pool(
+        (conf.REDIS_HOST, conf.REDIS_PORT), minsize=10, maxsize=20, encoding='utf-8',
+    )
+    logger.debug('Connection established!')
+    redis_client.close()
 
 
 if __name__ == '__main__':
-    asyncio.get_event_loop().run_until_complete(connect_redis())
+    asyncio.run(connect_redis())
