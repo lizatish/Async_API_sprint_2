@@ -14,7 +14,7 @@ conf = get_settings()
 @pytest.mark.asyncio
 async def test_get_genre_by_id(
     film_works_api_client: AsyncClient, redis_pool: Redis, id_genre: str, expected_body: dict, expected_answer: dict
-) -> None:
+):
     """
     Тест для подробного просмотра genre.
 
@@ -23,13 +23,10 @@ async def test_get_genre_by_id(
     - наличие жанра в кэше
     - соответствие жанра ожидаемому значению
     """
-    response = await film_works_api_client.get(f"/api/v1/genres/{id_genre}")
+    response = await film_works_api_client.get(f'/api/v1/genres/{id_genre}')
     response_body = response.json()
     redis_data = await redis_pool.get(id_genre)
-    if expected_answer['redis_data']:
-        assert redis_data
-    else:
-        assert not redis_data
+    assert (False if redis_data is None else True) == expected_answer['redis_data']
     assert response.status_code == expected_answer['status']
     assert response_body == expected_body
 
@@ -40,7 +37,7 @@ async def test_get_genre_by_id(
 @pytest.mark.asyncio
 async def test_get_genres_list(
     film_works_api_client: AsyncClient, redis_pool: Redis, expected_answer: dict
-) -> None:
+):
     """
     Тест для получения всех жанров.
 
@@ -49,13 +46,10 @@ async def test_get_genres_list(
     - количество элементов в ответе на запрос
     - количество элементов в кэше
     """
-    response = await film_works_api_client.get(f"/api/v1/genres/")
+    response = await film_works_api_client.get(f'/api/v1/genres/')
     response_body = response.json()
     redis_data = await redis_pool.lrange(f'{conf.BASE_URL}/api/v1/genres/', 0, -1)
-    if expected_answer['redis_data']:
-        assert redis_data
-    else:
-        assert not redis_data
+    assert (False if redis_data is None else True) == expected_answer['redis_data']
     assert len(redis_data) == expected_answer['redis_length']
     assert response.status_code == expected_answer['status']
     assert len(response_body) == expected_answer['response_length']
