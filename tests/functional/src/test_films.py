@@ -20,7 +20,7 @@ conf = get_settings()
 @pytest.mark.asyncio
 async def test_get_film_by_id(
     film_works_api_client: AsyncClient, redis_pool: Redis, id_film: str, expected_body: dict, expected_answer: dict
-) -> None:
+):
     """
     Тест для подробного просмотра film.
 
@@ -29,7 +29,7 @@ async def test_get_film_by_id(
     - наличие фильма в кэше
     - соответствие фильма ожидаемому значению
     """
-    response = await film_works_api_client.get(f"/api/v1/films/{id_film}")
+    response = await film_works_api_client.get(f'/api/v1/films/{id_film}')
     response_body = response.json()
     redis_data = await redis_pool.get(id_film)
     if expected_answer['redis_data']:
@@ -46,7 +46,7 @@ async def test_get_film_by_id(
 @pytest.mark.asyncio
 async def test_films_pagination(
     film_works_api_client: AsyncClient, redis_pool: Redis, expected_answer: dict, query_param: str
-) -> None:
+):
     """
     Тест на корректную работу пагинации при запросе к films.
 
@@ -55,7 +55,7 @@ async def test_films_pagination(
     - количество элементов в ответе на запрос
     - количество элементов в кэше
     """
-    response = await film_works_api_client.get(f"/api/v1/films/{query_param}")
+    response = await film_works_api_client.get(f'/api/v1/films/{query_param}')
     response_body = response.json()
     redis_data = await redis_pool.lrange(f'{conf.BASE_URL}/api/v1/films/{query_param}', 0, -1)
     if expected_answer['redis_data']:
@@ -73,7 +73,7 @@ async def test_films_pagination(
 @pytest.mark.asyncio
 async def test_films_sort(
     film_works_api_client: AsyncClient, redis_pool: Redis, expected_answer: dict, query_param: str
-) -> None:
+):
     """
     Тест на корректную работу сортировки при запросе к films.
 
@@ -83,7 +83,7 @@ async def test_films_sort(
     - количество элементов в кэше
     - что первый элемент больше или меньше последнего (в зависимости от типа сортировки)
     """
-    response = await film_works_api_client.get(f"/api/v1/films/{query_param}")
+    response = await film_works_api_client.get(f'/api/v1/films/{query_param}')
     response_body = response.json()
     redis_data = await redis_pool.lrange(f'{conf.BASE_URL}/api/v1/films/{query_param}', 0, -1)
     if expected_answer['redis_data']:
@@ -105,7 +105,7 @@ async def test_films_sort(
 @pytest.mark.asyncio
 async def test_films_filter_nested(
     film_works_api_client: AsyncClient, redis_pool: Redis, expected_answer: dict, query_param: str, filter_name: dict
-) -> None:
+):
     """
     Тест на корректную работу вложенных фильтров при запросе к films.
 
@@ -115,7 +115,7 @@ async def test_films_filter_nested(
     - количество элементов в кэше
     - что указанный в фильтре id присутствует в ответе
     """
-    response = await film_works_api_client.get(f"/api/v1/films/{query_param}")
+    response = await film_works_api_client.get(f'/api/v1/films/{query_param}')
     response_body = response.json()
     redis_data = await redis_pool.lrange(f'{conf.BASE_URL}/api/v1/films/{query_param}', 0, -1)
     if expected_answer['redis_data']:
@@ -139,7 +139,7 @@ async def test_films_filter_nested(
 @pytest.mark.asyncio
 async def test_films_filter_simple(
     film_works_api_client: AsyncClient, redis_pool: Redis, expected_answer: dict, query_param: str, filter_name: dict
-) -> None:
+):
     """
     Тест на корректную работу простых фильтров при запросе к films.
 
@@ -149,7 +149,7 @@ async def test_films_filter_simple(
     - количество элементов в кэше
     - что указанное значение фильтра присутствует в ответе
     """
-    response = await film_works_api_client.get(f"/api/v1/films/{query_param}")
+    response = await film_works_api_client.get(f'/api/v1/films/{query_param}')
     response_body = response.json()
     redis_data = await redis_pool.lrange(f'{conf.BASE_URL}/api/v1/films/{query_param}', 0, -1)
     if expected_answer['redis_data']:
@@ -172,7 +172,7 @@ async def test_films_filter_simple(
 @pytest.mark.asyncio
 async def test_films_search(
     film_works_api_client: AsyncClient, redis_pool: Redis, expected_answer: dict, query_param: str
-) -> None:
+):
     """
     Тест на корректную поиска при запросе к films/search.
 
@@ -181,7 +181,7 @@ async def test_films_search(
     - количество элементов в ответе на запрос
     - количество элементов в кэше
     """
-    response = await film_works_api_client.get(f"/api/v1/films/search{query_param}")
+    response = await film_works_api_client.get(f'/api/v1/films/search{query_param}')
     response_body = response.json()
     redis_data = await redis_pool.lrange(f'{conf.BASE_URL}/api/v1/films/search{query_param}', 0, -1)
     if expected_answer['redis_data']:
