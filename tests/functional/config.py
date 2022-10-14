@@ -22,19 +22,19 @@ class Settings(BaseSettings):
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     BASE_URL: str = 'http://test-api_service'
 
-    # Настройки Elasticsearch
-    ELASTIC_HOST: str = 'test-elastic'
-    ELASTIC_PORT: int = 9200
-    ELASTIC_FILM_WORKS_INDEX: str = 'movies'
-    ELASTIC_PERSONS_INDEX: str = 'persons'
-    ELASTIC_GENRES_INDEX: str = 'genres'
-    ELASTIC_ID_FIELD_NAME: str = 'id'
-    ELASTIC_GENRES_INDEX_FILE: str = BASE_DIR + '/functional/indices/genre.json'
-    ELASTIC_PERSONS_INDEX_FILE: str = BASE_DIR + '/functional/indices/persons.json'
-    ELASTIC_FILM_WORKS_INDEX_FILE: str = BASE_DIR + '/functional/indices/movies.json'
+    # Настройки поискового движка
+    SEARCH_ENGINE_HOST: str = 'test-elastic'
+    SEARCH_ENGINE_PORT: int = 9200
+    SEARCH_ENGINE_FILM_WORKS_INDEX: str = 'movies'
+    SEARCH_ENGINE_PERSONS_INDEX: str = 'persons'
+    SEARCH_ENGINE_GENRES_INDEX: str = 'genres'
+    SEARCH_ENGINE_ID_FIELD_NAME: str = 'id'
+    SEARCH_ENGINE_GENRES_INDEX_FILE: str = BASE_DIR + '/functional/indices/genre.json'
+    SEARCH_ENGINE_PERSONS_INDEX_FILE: str = BASE_DIR + '/functional/indices/persons.json'
+    SEARCH_ENGINE_FILM_WORKS_INDEX_FILE: str = BASE_DIR + '/functional/indices/movies.json'
 
     # Время хранения данных в кэше
-    FILM_CACHE_EXPIRE_IN_SECONDS: int = 60 * 5
+    FILM_CACHE_EXPIRE_IN_SECOND: int = 60 * 5
     GENRE_CACHE_EXPIRE_IN_SECONDS: int = 60 * 5
     PERSON_CACHE_EXPIRE_IN_SECONDS: int = 60 * 5
 

@@ -12,6 +12,7 @@ from httpx import AsyncClient
 
 from db import elastic
 from db import redis
+from db.storage import AsyncSearchEngine
 from main import app
 from tests.functional.config import get_settings
 from tests.functional.testdata.films import es_film_works_data
@@ -46,7 +47,7 @@ async def es_write_data(es_client: AsyncElasticsearch) -> Callable:
             get_es_fw_bulk_query(
                 data,
                 es_index,
-                conf.ELASTIC_ID_FIELD_NAME,
+                conf.SEARCH_ENGINE_ID_FIELD_NAME,
             ),
         )
 
@@ -54,9 +55,9 @@ async def es_write_data(es_client: AsyncElasticsearch) -> Callable:
 
 
 @pytest_asyncio.fixture(scope="session")
-async def es_client() -> AsyncElasticsearch:
+async def es_client() -> AsyncSearchEngine:
     """Фикстура соединения с es."""
-    client = AsyncElasticsearch(hosts=[f'http://{conf.ELASTIC_HOST}:{conf.ELASTIC_PORT}'])
+    client = AsyncElasticsearch(hosts=[f'http://{conf.SEARCH_ENGINE_HOST}:{conf.SEARCH_ENGINE_PORT}'])
     yield client
     await client.close()
 
@@ -97,7 +98,7 @@ def api_client(event_loop: AbstractEventLoop, es_client: AsyncElasticsearch, red
 @pytest_asyncio.fixture(scope="session")
 async def film_works_api_client(api_client: AsyncClient, es_write_data: Callable) -> AsyncClient:
     """Фикстура апи-клиента с заполненными данными es для тестирования фильмов."""
-    await es_write_data(es_film_works_data, conf.ELASTIC_FILM_WORKS_INDEX, conf.ELASTIC_FILM_WORKS_INDEX_FILE)
+    await es_write_data(es_film_works_data, conf.SEARCH_ENGINE_FILM_WORKS_INDEX, conf.SEARCH_ENGINE_FILM_WORKS_INDEX_FILE)
     yield api_client
 
 
@@ -108,12 +109,12 @@ async def persons_api_client(
         film_works_api_client: AsyncClient,
 ) -> AsyncClient:
     """Фикстура апи-клиента с заполненными данными es для тестирования участников фильма."""
-    await es_write_data(es_persons_data, conf.ELASTIC_PERSONS_INDEX, conf.ELASTIC_PERSONS_INDEX_FILE)
+    await es_write_data(es_persons_data, conf.SEARCH_ENGINE_PERSONS_INDEX, conf.SEARCH_ENGINE_PERSONS_INDEX_FILE)
     yield api_client
 
 
 @pytest_asyncio.fixture(scope="session")
 async def genres_api_client(api_client: AsyncClient, es_write_data: Callable) -> AsyncClient:
     """Фикстура апи-клиента с заполненными данными es для тестирования жанров."""
-    await es_write_data(es_genres_data, conf.ELASTIC_GENRES_INDEX, conf.ELASTIC_GENRES_INDEX_FILE)
+    await es_write_data(es_genres_data, conf.SEARCH_ENGINE_GENRES_INDEX, conf.SEARCH_ENGINE_GENRES_INDEX_FILE)
     yield api_client

@@ -1,13 +1,13 @@
 from functools import lru_cache
 from typing import Optional, List
 
-from elasticsearch import AsyncElasticsearch, NotFoundError
+from elasticsearch import NotFoundError
 from fastapi import Depends
 
 from core.config import get_settings
 from db.elastic import get_elastic
 from db.redis import get_redis
-from db.storage import AsyncCacheStorage
+from db.storage import AsyncCacheStorage, AsyncSearchEngine
 from models.common import FilterSimpleValues, FilterNestedValues
 from models.main import Film, Person, PersonFilm
 
@@ -17,7 +17,7 @@ conf = get_settings()
 class FilmService:
     """Сервис для работы с фильмами."""
 
-    def __init__(self, cache: AsyncCacheStorage, elastic: AsyncElasticsearch):
+    def __init__(self, cache: AsyncCacheStorage, elastic: AsyncSearchEngine):
         """Инициализация сервиса."""
         self.cache = cache
         self.elastic = elastic
@@ -339,7 +339,7 @@ class FilmService:
 @lru_cache()
 def get_film_service(
         redis: AsyncCacheStorage = Depends(get_redis),
-        elastic: AsyncElasticsearch = Depends(get_elastic),
+        elastic: AsyncSearchEngine = Depends(get_elastic),
 ) -> FilmService:
     """Возвращает экземпляр сервиса для работы с кинопроизведениями."""
     return FilmService(redis, elastic)

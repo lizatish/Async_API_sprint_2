@@ -1,13 +1,14 @@
 from functools import lru_cache
 from typing import Optional, List
 
-from elasticsearch import AsyncElasticsearch, NotFoundError
+from elasticsearch import NotFoundError
 from fastapi import Depends
 
 from core.config import get_settings
 from db.elastic import get_elastic
 from db.redis import get_redis
 from db.storage import AsyncCacheStorage
+from db.storage import AsyncSearchEngine
 from models.main import Person
 
 conf = get_settings()
@@ -16,7 +17,7 @@ conf = get_settings()
 class PersonService:
     """Сервис для работы с участниками фильма."""
 
-    def __init__(self, cache: AsyncCacheStorage, elastic: AsyncElasticsearch):
+    def __init__(self, cache: AsyncCacheStorage, elastic: AsyncSearchEngine):
         """Инициализация сервиса."""
         self.cache = cache
         self.elastic = elastic
@@ -155,7 +156,7 @@ class PersonService:
 @lru_cache()
 def get_person_service(
         redis: AsyncCacheStorage = Depends(get_redis),
-        elastic: AsyncElasticsearch = Depends(get_elastic),
+        elastic: AsyncSearchEngine = Depends(get_elastic),
 ) -> PersonService:
     """Возвращает экземпляр сервиса для работы с участниками фильма."""
     return PersonService(redis, elastic)

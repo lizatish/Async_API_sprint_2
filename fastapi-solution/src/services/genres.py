@@ -1,13 +1,13 @@
 from functools import lru_cache
 from typing import Optional, List
 
-from elasticsearch import AsyncElasticsearch, NotFoundError
+from elasticsearch import NotFoundError
 from fastapi import Depends
 
 from core.config import get_settings
 from db.elastic import get_elastic
 from db.redis import get_redis
-from db.storage import AsyncCacheStorage
+from db.storage import AsyncCacheStorage, AsyncSearchEngine
 from models.main import Genre
 
 conf = get_settings()
@@ -16,7 +16,7 @@ conf = get_settings()
 class GenreService:
     """Сервис для работы с жанрами."""
 
-    def __init__(self, cache: AsyncCacheStorage, elastic: AsyncElasticsearch):
+    def __init__(self, cache: AsyncCacheStorage, elastic: AsyncSearchEngine):
         """Инициализация сервиса."""
         self.cache = cache
         self.elastic = elastic
@@ -118,7 +118,7 @@ class GenreService:
 @lru_cache()
 def get_genre_service(
         redis: AsyncCacheStorage = Depends(get_redis),
-        elastic: AsyncElasticsearch = Depends(get_elastic),
+        elastic: AsyncSearchEngine = Depends(get_elastic),
 ) -> GenreService:
     """Возвращает экземпляр сервиса для работы с жанрами."""
     return GenreService(redis, elastic)
