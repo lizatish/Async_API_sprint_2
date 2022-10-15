@@ -218,23 +218,23 @@ test_data_for_film = [
 test_data_for_films_pagination = [
     (
         '',
-        {'status': 200, 'redis_data': True, 'response_length': 50, 'redis_length': 50},
+        {'status': 200, 'redis_data': True, 'response_length': 2, 'redis_length': 2},
     ),
     (
-        '?size=10&number=0',
-        {'status': 200, 'redis_data': True, 'response_length': 10, 'redis_length': 10},
+        '?size=2&number=0',
+        {'status': 200, 'redis_data': True, 'response_length': 2, 'redis_length': 2},
     ),
     (
         '?size=-10&number=0',
         {'status': 422, 'redis_data': False, 'response_length': 1, 'redis_length': 0},
     ),
     (
-        '?size=13&number=-500',
-        {'status': 200, 'redis_data': True, 'response_length': 13, 'redis_length': 13},
+        '?size=1&number=-500',
+        {'status': 200, 'redis_data': True, 'response_length': 1, 'redis_length': 1},
     ),
     (
         '?sizeee=13&nuumber=-500',
-        {'status': 200, 'redis_data': True, 'response_length': 50, 'redis_length': 50},
+        {'status': 200, 'redis_data': True, 'response_length': 2, 'redis_length': 2},
     ),
 ]
 
@@ -244,8 +244,8 @@ test_data_for_films_sort = [
         {
             'status': 200,
             'redis_data': True,
-            'response_length': 50,
-            'redis_length': 50,
+            'response_length': 2,
+            'redis_length': 2,
             'comparison': 0,
         },
     ),
@@ -254,8 +254,8 @@ test_data_for_films_sort = [
         {
             'status': 200,
             'redis_data': True,
-            'response_length': 50,
-            'redis_length': 50,
+            'response_length': 2,
+            'redis_length': 2,
             'comparison': 0,
         },
     ),
@@ -264,8 +264,8 @@ test_data_for_films_sort = [
         {
             'status': 200,
             'redis_data': True,
-            'response_length': 50,
-            'redis_length': 50,
+            'response_length': 2,
+            'redis_length': 2,
             'comparison': 1,
         },
     ),
@@ -274,8 +274,8 @@ test_data_for_films_sort = [
         {
             'status': 200,
             'redis_data': True,
-            'response_length': 50,
-            'redis_length': 50,
+            'response_length': 2,
+            'redis_length': 2,
             'comparison': 0,
         },
     ),
@@ -294,8 +294,8 @@ test_data_for_films_sort = [
 test_data_for_films_filter_nested = [
     (
         {'genres': '3d8d9bf5-0d90-4353-88ba-4ccc5d2c07ff'},
-        '?filter[genres]=3d8d9bf5-0d90-4353-88ba-4ccc5d2c07ff&size=5&number=0',
-        {'status': 200, 'redis_data': True, 'response_length': 5, 'redis_length': 5},
+        '?filter[genres]=3d8d9bf5-0d90-4353-88ba-4ccc5d2c07ff&size=2&number=0',
+        {'status': 200, 'redis_data': True, 'response_length': 2, 'redis_length': 2},
     ),
     (
         {'genres': '3d8d9bf5-0d90-4353-88ba-4ccc5d2c07f'},
@@ -304,8 +304,8 @@ test_data_for_films_filter_nested = [
     ),
     (
         None,
-        '?filterrr[genres]=3d8d9bf5-0d90-4353-88ba-4ccc5d2c07f&size=5&number=0',
-        {'status': 200, 'redis_data': True, 'response_length': 5, 'redis_length': 5},
+        '?filterrr[genres]=3d8d9bf5-0d90-4353-88ba-4ccc5d2c07f&size=2&number=0',
+        {'status': 200, 'redis_data': True, 'response_length': 2, 'redis_length': 2},
     ),
     (
         {'actors': 'd1507689-c396-4603-89ed-825022d64296'},
@@ -338,8 +338,8 @@ test_data_for_films_filter_nested = [
 
 test_data_for_films_filter_simple = [
     (
-        {'id': '87c64348-61a0-4e6c-99c5-a6bd8b0bcbc3'},
-        '?size=1&number=0&filter[id]=87c64348-61a0-4e6c-99c5-a6bd8b0bcbc3',
+        {'id': 'b1a2aae8-5c9e-4583-b89e-883c0d0c969a'},
+        '?size=1&number=0&filter[id]=b1a2aae8-5c9e-4583-b89e-883c0d0c969a',
         {'status': 200, 'redis_data': True, 'response_length': 1, 'redis_length': 1},
     ),
     (
@@ -348,41 +348,69 @@ test_data_for_films_filter_simple = [
         {'status': 404, 'redis_data': False, 'response_length': 1, 'redis_length': 0},
     ),
     (
-        {'imdb_rating': 8},
-        '?size=1&number=0&filter[imdb_rating]=8',
+        {'imdb_rating': 8.1},
+        '?size=1&number=0&filter[imdb_rating]=8.1',
         {'status': 200, 'redis_data': True, 'response_length': 1, 'redis_length': 1},
     ),
     (
-        {'title': 'Ayrton'},
-        '?size=50&number=0&filter[title]=Ayrton',
+        {'title': 'Academy'},
+        '?size=50&number=0&filter[title]=Academy',
         {'status': 200, 'redis_data': True, 'response_length': 1, 'redis_length': 1},
     ),
     (
-        {'description': 'Ayrton'},
-        '?size=50&number=0&filter[description]=Ayrton',
+        {'description': 'Dallas'},
+        '?size=50&number=0&filter[description]=Dallas',
         {'status': 200, 'redis_data': True, 'response_length': 1, 'redis_length': 1},
     ),
     (
         {
-            'description': 'Ayrton',
-            'title': 'Ayrton',
-            'imdb_rating': 8,
-            'id': '87c64348-61a0-4e6c-99c5-a6bd8b0bcbc3',
+            'description': 'Dallas',
+            'title': 'Elite',
+            'imdb_rating': 8.5,
+            'id': 'b1a2aae8-5c9e-4583-b89e-883c0d0c969a',
         },
-        '?size=50&number=0&filter[description]=Ayrton&filter[title]=Ayrton&filter'
-        '[imdb_rating]=8&filter[id]=87c64348-61a0-4e6c-99c5-a6bd8b0bcbc3',
+        '?size=50&number=0&filter[description]=Dallas&filter[title]=Elite'
+        '[imdb_rating]=8.5&filter[id]=b1a2aae8-5c9e-4583-b89e-883c0d0c969a',
         {'status': 200, 'redis_data': True, 'response_length': 1, 'redis_length': 1},
     ),
 ]
 
 test_data_for_films_search = [
     (
-        '?size=30&number=0&query=Ayrton',
-        {'status': 200, 'redis_data': True, 'response_length': 30, 'redis_length': 30},
+        '?size=30&number=0&query=Academy',
+        {'status': 200, 'redis_data': True, 'response_length': 2, 'redis_length': 2},
+        [
+            {
+                "uuid": "db594b91-a587-48c4-bac9-5c6be5e4cf33",
+                "title": "Star Trek: Starfleet Academy",
+                "imdb_rating": 8.1
+            },
+            {
+                "uuid": "b1a2aae8-5c9e-4583-b89e-883c0d0c969a",
+                "title": "Star Trek: Elite Force II",
+                "imdb_rating": 8.5
+            }
+        ]
     ),
-    ('', {'status': 422, 'redis_data': False, 'response_length': 1, 'redis_length': 0}),
+    (
+        '',
+        {'status': 422, 'redis_data': False, 'response_length': 1, 'redis_length': 0},
+        {
+            "detail": [
+                {
+                    "loc": [
+                        "query",
+                        "query"
+                    ],
+                    "msg": "field required",
+                    "type": "value_error.missing"
+                }
+            ]
+        }
+    ),
     (
         '?query=wqrwqeqweq',
         {'status': 404, 'redis_data': False, 'response_length': 1, 'redis_length': 0},
+        {'detail': 'Film not found'},
     ),
 ]

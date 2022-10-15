@@ -167,11 +167,11 @@ async def test_films_filter_simple(
 
 
 @pytest.mark.parametrize(
-    'query_param, expected_answer', test_data_for_films_search
+    'query_param, expected_answer, expected_body', test_data_for_films_search
 )
 @pytest.mark.asyncio
 async def test_films_search(
-    film_works_api_client: AsyncClient, redis_pool: Redis, expected_answer: dict, query_param: str
+    film_works_api_client: AsyncClient, redis_pool: Redis, expected_answer: dict, query_param: str, expected_body
 ):
     """
     Тест на корректную поиска при запросе к films/search.
@@ -191,3 +191,4 @@ async def test_films_search(
     assert len(redis_data) == expected_answer['redis_length']
     assert response.status_code == expected_answer['status']
     assert len(response_body) == expected_answer['response_length']
+    assert response_body == expected_body
