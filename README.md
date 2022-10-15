@@ -7,3 +7,18 @@
 Вы можете разбить эти задачи на более маленькие, например, распределять между участниками команды не большие куски задания, а маленькие подзадачи. В таком случае не забудьте зафиксировать изменения в issues в репозитории.
 
 **От каждого разработчика ожидается выполнение минимум 40% от общего числа стори поинтов в спринте.**
+
+Как распределялись задачи:
+
+- 00 - Liza Tishkovets, Oleg Rubtsov
+- 01 - Liza Tishkovets
+- 02 - Liza Tishkovets
+- 04 - Liza Tishkovets
+- 05 - Oleg Rubtsov
+- 06 - Liza Tishkovets
+- 07 - Oleg Rubtsov
+- 08 - Oleg Rubtsov
+- 10 - Liza Tishkovets, Oleg Rubtsov
+
+Репозиторий для работы:
+https://github.com/lizatish/Async_API_sprint_2
