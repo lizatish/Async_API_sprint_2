@@ -113,7 +113,7 @@ test_data_for_genre = [
             'uuid': '120a21cf-9097-479e-904a-13dd7198c1dd',
             'name': 'Adventure'
         },
-        {'status': 200, 'redis_data': True}
+        {'status': 200, 'redis_data': True},
     ),
     (
         'f24fd632-b1a5-4273-a835-0119bd12f829',
@@ -121,12 +121,12 @@ test_data_for_genre = [
             'uuid': 'f24fd632-b1a5-4273-a835-0119bd12f829',
             'name': 'News'
         },
-        {'status': 200, 'redis_data': True}
+        {'status': 200, 'redis_data': True},
     ),
     (
         'b1a2aae8-5c9e-4583-b89e-883c0d0c969M',
         {'detail': 'Genre not found'},
-        {'status': 404, 'redis_data': False}
+        {'status': 404, 'redis_data': False},
     )
 ]
 

@@ -1,4 +1,4 @@
-from typing import List, Optional, Literal
+from typing import List, Optional, Literal, Set
 
 from pydantic import BaseModel, Field
 
@@ -9,7 +9,7 @@ class PersonFilm(BaseModel):
     """Модель представления вложенного фильма внутри персоны."""
 
     role: Literal['actor', 'writer', 'director']
-    film_ids: List[str]
+    film_ids: Set[str]
 
 
 class Person(UUIDMixin):

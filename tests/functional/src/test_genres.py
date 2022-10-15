@@ -13,7 +13,7 @@ conf = get_settings()
 )
 @pytest.mark.asyncio
 async def test_get_genre_by_id(
-    film_works_api_client: AsyncClient, redis_pool: Redis, id_genre: str, expected_body: dict, expected_answer: dict
+    film_works_api_client: AsyncClient, redis_flushall, redis_pool: Redis, id_genre: str, expected_body: dict, expected_answer: dict
 ):
     """
     Тест для подробного просмотра genre.
