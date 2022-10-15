@@ -64,7 +64,7 @@ async def search_persons(
 
     person_ids = [person.id for person in persons]
     fw_person_info = await film_service.get_person_by_ids(person_ids)
-    full_persons = await person_service.enrich_persons_list_data(persons, fw_person_info, url=request.url._url,)
+    full_persons = await person_service.enrich_persons_list_data(persons, fw_person_info, url=request.url._url)
 
     return [
         Person(

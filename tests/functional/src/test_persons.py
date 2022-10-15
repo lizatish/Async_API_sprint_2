@@ -7,6 +7,7 @@ from httpx import AsyncClient
 from tests.functional.config import get_settings
 from tests.functional.testdata.persons import test_data_for_persons_pagination, test_data_search_persons, \
     test_data_get_films_by_person, test_data_get_film_by_id
+from tests.functional.utils.helpers import prepare_cache_output, prepare_expected_output, compare_films_by_person_answer
 
 conf = get_settings()
 
@@ -34,11 +35,9 @@ async def test_get_person_by_id(persons_api_client: AsyncClient, redis_pool: Red
     assert body == expected_answer
 
     if is_use_cache:
-        redis_data_binary = await redis_pool.get(person_id)
-        redis_data = json.loads(redis_data_binary.decode())
-        assert redis_data['id'] == expected_answer['uuid']
-        assert redis_data['full_name'] == expected_answer['full_name']
-        assert redis_data['films'] == expected_answer['films']
+        cache_data_binary = await redis_pool.get(person_id)
+        cache_data = json.loads(cache_data_binary.decode())
+        compare_films_by_person_answer([cache_data], [expected_answer])
 
 
 @pytest.mark.parametrize(
@@ -52,11 +51,10 @@ async def test_get_films_by_person(persons_api_client: AsyncClient, redis_pool: 
     body = response.json()
     assert body == expected_answer
     if is_use_cache:
-        redis_data_binary = await redis_pool.lrange(f'film_by_person_{person_id}', 0, -1)
-        redis_data = [json.loads(elem.decode()) for elem in redis_data_binary]
-        sorted_redis_data = sorted(redis_data, key=lambda d: d['id'])
-        sorted_expected_answer = sorted(expected_answer, key=lambda d: d['uuid'])
-        for r_data, e_data in zip(sorted_redis_data, sorted_expected_answer):
+        cache_data_binary = await redis_pool.lrange(f'film_by_person_{person_id}', 0, -1)
+        prepared_cache_data = prepare_cache_output(cache_data_binary)
+        prepared_expected_answer = prepare_expected_output(expected_answer)
+        for r_data, e_data in zip(prepared_cache_data, prepared_expected_answer):
             assert r_data['id'] == e_data['uuid']
             assert r_data['title'] == e_data['title']
             assert r_data['imdb_rating'] == e_data['imdb_rating']
@@ -75,14 +73,10 @@ async def test_search_persons(persons_api_client: AsyncClient, redis_pool: Redis
     assert body == expected_answer
 
     if is_use_cache:
-        redis_data_binary = await redis_pool.lrange(f"{conf.BASE_URL}{url}", 0, -1)
-        redis_data = [json.loads(elem.decode()) for elem in redis_data_binary]
-        sorted_redis_data = sorted(redis_data, key=lambda d: d['id'])
-        sorted_expected_answer = sorted(expected_answer, key=lambda d: d['uuid'])
-        for r_data, e_data in zip(sorted_redis_data, sorted_expected_answer):
-            assert r_data['id'] == e_data['uuid']
-            assert r_data['full_name'] == e_data['full_name']
-            assert r_data['films'] == e_data['films']
+        cache_data_binary = await redis_pool.lrange(f"{conf.BASE_URL}{url}", 0, -1)
+        prepared_cache_data = prepare_cache_output(cache_data_binary)
+        prepared_expected_answer = prepare_expected_output(expected_answer)
+        compare_films_by_person_answer(prepared_cache_data, prepared_expected_answer)
 
 
 @pytest.mark.parametrize(
@@ -102,11 +96,7 @@ async def test_pagination_persons(
     assert response.status_code == 200
 
     if is_use_cache:
-        redis_data_binary = await redis_pool.lrange(f"{conf.BASE_URL}{url}", 0, -1)
-        redis_data = [json.loads(elem.decode()) for elem in redis_data_binary]
-        sorted_redis_data = sorted(redis_data, key=lambda d: d['id'])
-        sorted_expected_answer = sorted(expected_answer, key=lambda d: d['uuid'])
-        for r_data, e_data in zip(sorted_redis_data, sorted_expected_answer):
-            assert r_data['id'] == e_data['uuid']
-            assert r_data['full_name'] == e_data['full_name']
-            assert r_data['films'] == e_data['films']
+        cache_data_binary = await redis_pool.lrange(f"{conf.BASE_URL}{url}", 0, -1)
+        prepared_cache_data = prepare_cache_output(cache_data_binary)
+        prepared_expected_answer = prepare_expected_output(expected_answer)
+        compare_films_by_person_answer(prepared_cache_data, prepared_expected_answer)
