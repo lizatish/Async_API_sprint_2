@@ -47,5 +47,5 @@ def prepare_redis_genre(genre: bytes) -> dict:
     """Преобразует жанр из редиса к необходимому виду."""
     genre = json.loads(genre.decode())
     genre.pop('description', None)
-    genre['uuid']= genre.pop('id')
+    genre['uuid'] = genre.pop('id')
     return genre
