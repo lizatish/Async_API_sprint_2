@@ -1,6 +1,7 @@
 import pytest
 from aioredis import Redis
 from httpx import AsyncClient
+
 from tests.functional.config import get_settings
 from tests.functional.testdata.genres import (test_data_for_genre,
                                               test_data_for_genres_list)
@@ -14,8 +15,8 @@ conf = get_settings()
 )
 @pytest.mark.asyncio
 async def test_get_genre_by_id(
-    genres_api_client: AsyncClient, redis_pool: Redis, redis_flushall,
-    id_genre: str, expected_body: dict, expected_answer: dict
+        genres_api_client: AsyncClient, redis_pool: Redis, redis_flushall,
+        id_genre: str, expected_body: dict, expected_answer: dict
 ):
     """
     Тест для подробного просмотра genre.
@@ -27,8 +28,9 @@ async def test_get_genre_by_id(
     """
     response = await genres_api_client.get(f'/api/v1/genres/{id_genre}')
     response_body = response.json()
-    if expected_answer['redis_data']:
-        redis_genre = prepare_redis_genre(await redis_pool.get(id_genre))
+    if expected_answer['is_use_cache']:
+        redis_data = await redis_pool.get(id_genre)
+        redis_genre = prepare_redis_genre(redis_data)
         assert redis_genre == expected_body
     assert response.status_code == expected_answer['status']
     assert response_body == expected_body
@@ -39,8 +41,8 @@ async def test_get_genre_by_id(
 )
 @pytest.mark.asyncio
 async def test_get_genres_list(
-    genres_api_client: AsyncClient, redis_pool: Redis, redis_flushall,
-    expected_answer: dict, expected_body: list
+        genres_api_client: AsyncClient, redis_pool: Redis, redis_flushall,
+        expected_answer: dict, expected_body: list
 ):
     """
     Тест для получения всех жанров.
@@ -52,11 +54,11 @@ async def test_get_genres_list(
     """
     response = await genres_api_client.get(f'/api/v1/genres/')
     response_body = response.json()
-    redis_data = await redis_pool.lrange(f'{conf.BASE_URL}/api/v1/genres/', 0, -1)
-    if expected_answer['redis_data']:
+    if expected_answer['is_use_cache']:
+        redis_data = await redis_pool.lrange(f'{conf.BASE_URL}/api/v1/genres/', 0, -1)
         genres = [prepare_redis_genre(genre) for genre in redis_data]
         assert genres[::-1] == expected_body
-    assert len(redis_data) == expected_answer['redis_length']
+        assert len(redis_data) == expected_answer['redis_length']
     assert response.status_code == expected_answer['status']
     assert len(response_body) == expected_answer['response_length']
     assert response_body == expected_body
