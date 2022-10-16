@@ -39,5 +39,5 @@ def prepare_redis_film(film: bytes) -> dict:
     return {
         'uuid': film['id'],
         'title': film['title'],
-        'imdb_rating': film['imdb_rating']
+        'imdb_rating': film['imdb_rating'],
     }

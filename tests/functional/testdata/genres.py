@@ -111,7 +111,7 @@ test_data_for_genre = [
         '120a21cf-9097-479e-904a-13dd7198c1dd',
         {
             'uuid': '120a21cf-9097-479e-904a-13dd7198c1dd',
-            'name': 'Adventure'
+            'name': 'Adventure',
         },
         {'status': 200, 'redis_data': True},
     ),
@@ -119,7 +119,7 @@ test_data_for_genre = [
         'f24fd632-b1a5-4273-a835-0119bd12f829',
         {
             'uuid': 'f24fd632-b1a5-4273-a835-0119bd12f829',
-            'name': 'News'
+            'name': 'News',
         },
         {'status': 200, 'redis_data': True},
     ),
@@ -127,7 +127,7 @@ test_data_for_genre = [
         'b1a2aae8-5c9e-4583-b89e-883c0d0c969M',
         {'detail': 'Genre not found'},
         {'status': 404, 'redis_data': False},
-    )
+    ),
 ]
 
 test_data_for_genres_list = [

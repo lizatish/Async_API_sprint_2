@@ -73,7 +73,7 @@ class PersonService:
 
     async def enrich_person_data(self, main_person_info: Person, fw_person_info: Person) -> Person:
         """Обогащает данные по персоне, возвращает полные данные по персоне."""
-        enriched_id = f"enriched_{main_person_info.id}"
+        enriched_id = f'enriched_{main_person_info.id}'
         person = await self._person_from_cache(enriched_id)
         if not person:
             person = main_person_info.copy()
@@ -135,7 +135,7 @@ class PersonService:
 
     async def enrich_persons_list_data(self, persons: List[Person], fw_person_info: List[Person], url) -> List[Person]:
         """Возвращает полный список персон с расширенными данными."""
-        enriched_url = f"enriched_{url}"
+        enriched_url = f'enriched_{url}'
         full_persons = await self._persons_from_cache(enriched_url)
         if not full_persons:
             full_persons = []
