@@ -162,7 +162,7 @@ test_data_for_film = [
                 }
             ],
         },
-        {'status': 200, 'redis_data': True},
+        {'status': 200, 'is_use_cache': True},
     ),
     (
         'b1a2aae8-5c9e-4583-b89e-883c0d0c969a',
@@ -206,19 +206,19 @@ test_data_for_film = [
             ],
             'directors': [],
         },
-        {'status': 200, 'redis_data': True},
+        {'status': 200, 'is_use_cache': True},
     ),
     (
         'b1a2aae8-5c9e-4583-b89e-883c0d0c969M',
         {'detail': 'Film not found'},
-        {'status': 404, 'redis_data': False},
+        {'status': 404, 'is_use_cache': False},
     ),
 ]
 
 test_data_for_films_pagination = [
     (
         '',
-        {'status': 200, 'redis_data': True, 'response_length': 2, 'redis_length': 2},
+        {'status': 200, 'is_use_cache': True, 'response_length': 2, 'redis_length': 2},
         [
             {
                 'uuid': 'b1a2aae8-5c9e-4583-b89e-883c0d0c969a',
@@ -234,7 +234,7 @@ test_data_for_films_pagination = [
     ),
     (
         '?size=2&number=0',
-        {'status': 200, 'redis_data': True, 'response_length': 2, 'redis_length': 2},
+        {'status': 200, 'is_use_cache': True, 'response_length': 2, 'redis_length': 2},
         [
             {
                 'uuid': 'b1a2aae8-5c9e-4583-b89e-883c0d0c969a',
@@ -250,7 +250,7 @@ test_data_for_films_pagination = [
     ),
     (
         '?size=-10&number=0',
-        {'status': 422, 'redis_data': False, 'response_length': 1, 'redis_length': 0},
+        {'status': 422, 'is_use_cache': False, 'response_length': 1, 'redis_length': 0},
         {
             'detail': [
                 {
@@ -269,7 +269,7 @@ test_data_for_films_pagination = [
     ),
     (
         '?size=1&number=-500',
-        {'status': 200, 'redis_data': True, 'response_length': 1, 'redis_length': 1},
+        {'status': 200, 'is_use_cache': True, 'response_length': 1, 'redis_length': 1},
         [
             {
                 'uuid': 'b1a2aae8-5c9e-4583-b89e-883c0d0c969a',
@@ -280,7 +280,7 @@ test_data_for_films_pagination = [
     ),
     (
         '?sizeee=13&nuumber=-500',
-        {'status': 200, 'redis_data': True, 'response_length': 2, 'redis_length': 2},
+        {'status': 200, 'is_use_cache': True, 'response_length': 2, 'redis_length': 2},
         [
             {
                 'uuid': 'b1a2aae8-5c9e-4583-b89e-883c0d0c969a',
@@ -301,7 +301,7 @@ test_data_for_films_sort = [
         '',
         {
             'status': 200,
-            'redis_data': True,
+            'is_use_cache': True,
             'response_length': 2,
             'redis_length': 2,
             'comparison': 0,
@@ -323,7 +323,7 @@ test_data_for_films_sort = [
         '?sort=-imdb_rating',
         {
             'status': 200,
-            'redis_data': True,
+            'is_use_cache': True,
             'response_length': 2,
             'redis_length': 2,
             'comparison': 0,
@@ -345,7 +345,7 @@ test_data_for_films_sort = [
         '?sort=imdb_rating',
         {
             'status': 200,
-            'redis_data': True,
+            'is_use_cache': True,
             'response_length': 2,
             'redis_length': 2,
             'comparison': 1,
@@ -367,7 +367,7 @@ test_data_for_films_sort = [
         '?sooort=imdb_rating',
         {
             'status': 200,
-            'redis_data': True,
+            'is_use_cache': True,
             'response_length': 2,
             'redis_length': 2,
             'comparison': 0,
@@ -389,7 +389,7 @@ test_data_for_films_sort = [
         '?sort=imdb_raaaating',
         {
             'status': 422,
-            'redis_data': False,
+            'is_use_cache': False,
             'response_length': 1,
             'redis_length': 0,
             'comparison': 2,
@@ -420,7 +420,7 @@ test_data_for_films_filter_nested = [
     (
         {'genres': '3d8d9bf5-0d90-4353-88ba-4ccc5d2c07ff'},
         '?filter[genres]=3d8d9bf5-0d90-4353-88ba-4ccc5d2c07ff&size=2&number=0',
-        {'status': 200, 'redis_data': True, 'response_length': 2, 'redis_length': 2},
+        {'status': 200, 'is_use_cache': True, 'response_length': 2, 'redis_length': 2},
         [
             {
                 'uuid': 'b1a2aae8-5c9e-4583-b89e-883c0d0c969a',
@@ -437,7 +437,7 @@ test_data_for_films_filter_nested = [
     (
         {'genres': '3d8d9bf5-0d90-4353-88ba-4ccc5d2c07f'},
         '?filter[genres]=3d8d9bf5-0d90-4353-88ba-4ccc5d2c07f&size=5&number=0',
-        {'status': 404, 'redis_data': False, 'response_length': 1, 'redis_length': 0},
+        {'status': 404, 'is_use_cache': False, 'response_length': 1, 'redis_length': 0},
         {
             'detail': 'Film not found'
         }
@@ -445,7 +445,7 @@ test_data_for_films_filter_nested = [
     (
         None,
         '?filterrr[genres]=3d8d9bf5-0d90-4353-88ba-4ccc5d2c07f&size=2&number=0',
-        {'status': 200, 'redis_data': True, 'response_length': 2, 'redis_length': 2},
+        {'status': 200, 'is_use_cache': True, 'response_length': 2, 'redis_length': 2},
         [
             {
                 'uuid': 'b1a2aae8-5c9e-4583-b89e-883c0d0c969a',
@@ -462,7 +462,7 @@ test_data_for_films_filter_nested = [
     (
         {'actors': 'd1507689-c396-4603-89ed-825022d64296'},
         '?filter[actors]=d1507689-c396-4603-89ed-825022d64296&size=1&number=0',
-        {'status': 200, 'redis_data': True, 'response_length': 1, 'redis_length': 1},
+        {'status': 200, 'is_use_cache': True, 'response_length': 1, 'redis_length': 1},
         [
             {
                 'uuid': 'b1a2aae8-5c9e-4583-b89e-883c0d0c969a',
@@ -474,7 +474,7 @@ test_data_for_films_filter_nested = [
     (
         {'writers': '57a471b1-09dc-48fd-ba8a-1211015a0110'},
         '?filter[writers]=57a471b1-09dc-48fd-ba8a-1211015a0110&size=1&number=0',
-        {'status': 200, 'redis_data': True, 'response_length': 1, 'redis_length': 1},
+        {'status': 200, 'is_use_cache': True, 'response_length': 1, 'redis_length': 1},
         [
             {
                 'uuid': 'b1a2aae8-5c9e-4583-b89e-883c0d0c969a',
@@ -486,7 +486,7 @@ test_data_for_films_filter_nested = [
     (
         {'directors': '34e69ed1-68d7-47e5-9621-e4607e2e4f68'},
         '?filter[directors]=34e69ed1-68d7-47e5-9621-e4607e2e4f68&size=1&number=0',
-        {'status': 200, 'redis_data': True, 'response_length': 1, 'redis_length': 1},
+        {'status': 200, 'is_use_cache': True, 'response_length': 1, 'redis_length': 1},
         [
             {
                 'uuid': 'db594b91-a587-48c4-bac9-5c6be5e4cf33',
@@ -505,7 +505,7 @@ test_data_for_films_filter_nested = [
         '?size=1&number=0&filter[actors]=ff2b4d5a-d920-4728-ab21-6f7b3c003e51&filter[directors]'
         '=34e69ed1-68d7-47e5-9621-e4607e2e4f68&filter[writers]=998acbe6-dd4b-4f93-9996-0efac51d5b95&filter'
         '[genres]=120a21cf-9097-479e-904a-13dd7198c1dd',
-        {'status': 200, 'redis_data': True, 'response_length': 1, 'redis_length': 1},
+        {'status': 200, 'is_use_cache': True, 'response_length': 1, 'redis_length': 1},
         [
             {
                 'uuid': 'db594b91-a587-48c4-bac9-5c6be5e4cf33',
@@ -520,7 +520,7 @@ test_data_for_films_filter_simple = [
     (
         {'id': 'b1a2aae8-5c9e-4583-b89e-883c0d0c969a'},
         '?size=1&number=0&filter[id]=b1a2aae8-5c9e-4583-b89e-883c0d0c969a',
-        {'status': 200, 'redis_data': True, 'response_length': 1, 'redis_length': 1},
+        {'status': 200, 'is_use_cache': True, 'response_length': 1, 'redis_length': 1},
         [
             {
                 'uuid': 'b1a2aae8-5c9e-4583-b89e-883c0d0c969a',
@@ -532,7 +532,7 @@ test_data_for_films_filter_simple = [
     (
         {'id': '87c64348-61a0-4e6c-99c5-a6bd8b0bcbc'},
         '?size=1&number=0&filter[id]=87c64348-61a0-4e6c-99c5-a6bd8b0bcbc',
-        {'status': 404, 'redis_data': False, 'response_length': 1, 'redis_length': 0},
+        {'status': 404, 'is_use_cache': False, 'response_length': 1, 'redis_length': 0},
         {
             'detail': 'Film not found'
         }
@@ -540,7 +540,7 @@ test_data_for_films_filter_simple = [
     (
         {'imdb_rating': 8.1},
         '?size=1&number=0&filter[imdb_rating]=8.1',
-        {'status': 200, 'redis_data': True, 'response_length': 1, 'redis_length': 1},
+        {'status': 200, 'is_use_cache': True, 'response_length': 1, 'redis_length': 1},
         [
             {
                 'uuid': 'db594b91-a587-48c4-bac9-5c6be5e4cf33',
@@ -552,7 +552,7 @@ test_data_for_films_filter_simple = [
     (
         {'title': 'Academy'},
         '?size=50&number=0&filter[title]=Academy',
-        {'status': 200, 'redis_data': True, 'response_length': 1, 'redis_length': 1},
+        {'status': 200, 'is_use_cache': True, 'response_length': 1, 'redis_length': 1},
         [
             {
                 'uuid': 'db594b91-a587-48c4-bac9-5c6be5e4cf33',
@@ -564,7 +564,7 @@ test_data_for_films_filter_simple = [
     (
         {'description': 'Dallas'},
         '?size=50&number=0&filter[description]=Dallas',
-        {'status': 200, 'redis_data': True, 'response_length': 1, 'redis_length': 1},
+        {'status': 200, 'is_use_cache': True, 'response_length': 1, 'redis_length': 1},
         [
             {
                 'uuid': 'b1a2aae8-5c9e-4583-b89e-883c0d0c969a',
@@ -582,7 +582,7 @@ test_data_for_films_filter_simple = [
         },
         '?size=50&number=0&filter[description]=Dallas&filter[title]=Elite'
         '[imdb_rating]=8.5&filter[id]=b1a2aae8-5c9e-4583-b89e-883c0d0c969a',
-        {'status': 200, 'redis_data': True, 'response_length': 1, 'redis_length': 1},
+        {'status': 200, 'is_use_cache': True, 'response_length': 1, 'redis_length': 1},
         [
             {
                 'uuid': 'b1a2aae8-5c9e-4583-b89e-883c0d0c969a',
@@ -596,7 +596,7 @@ test_data_for_films_filter_simple = [
 test_data_for_films_search = [
     (
         '?size=30&number=0&query=Academy',
-        {'status': 200, 'redis_data': True, 'response_length': 2, 'redis_length': 2},
+        {'status': 200, 'is_use_cache': True, 'response_length': 2, 'redis_length': 2},
         [
             {
                 'uuid': 'db594b91-a587-48c4-bac9-5c6be5e4cf33',
@@ -612,7 +612,7 @@ test_data_for_films_search = [
     ),
     (
         '',
-        {'status': 422, 'redis_data': False, 'response_length': 1, 'redis_length': 0},
+        {'status': 422, 'is_use_cache': False, 'response_length': 1, 'redis_length': 0},
         {
             'detail': [
                 {
@@ -628,7 +628,7 @@ test_data_for_films_search = [
     ),
     (
         '?query=wqrwqeqweq',
-        {'status': 404, 'redis_data': False, 'response_length': 1, 'redis_length': 0},
+        {'status': 404, 'is_use_cache': False, 'response_length': 1, 'redis_length': 0},
         {'detail': 'Film not found'},
     ),
 ]
