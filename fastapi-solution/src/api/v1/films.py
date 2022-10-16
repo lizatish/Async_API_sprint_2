@@ -1,6 +1,6 @@
-from typing import List
+from typing import List, Literal
 
-from fastapi import APIRouter, Depends, Query, Request
+from fastapi import APIRouter, Depends, Request
 
 from api.v1.errors import FilmNotFound
 from api.v1.schemas.films import ShortFilm, Film, Person, Genre
@@ -21,7 +21,7 @@ async def films_scope(
         paginator: Paginator = Depends(),
         film_service: FilmService = Depends(get_film_service),
         filter: dict = Depends(get_filter),
-        sort: str = Query(default='-imdb_rating', description='Сортировка'),
+        sort: Literal['imdb_rating', '-imdb_rating'] = '-imdb_rating',
 ) -> List[ShortFilm]:
     """
     Возвращает отсортированный и отфильтрованный список фильмов со следующим содержимым:
