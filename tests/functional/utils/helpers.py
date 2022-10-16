@@ -31,3 +31,13 @@ def compare_films_by_person_answer(prepared_cache_data: list[dict], sorted_expec
         assert r_data['id'] == e_data['uuid']
         assert r_data['full_name'] == e_data['full_name']
         assert r_data['films'] == e_data['films']
+
+
+def prepare_redis_film(film: bytes) -> dict:
+    """Преобразует фильм из редиса к необходимому виду."""
+    film = json.loads(film.decode())
+    return {
+        'uuid': film['id'],
+        'title': film['title'],
+        'imdb_rating': film['imdb_rating']
+    }

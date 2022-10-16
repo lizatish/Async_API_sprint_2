@@ -219,22 +219,80 @@ test_data_for_films_pagination = [
     (
         '',
         {'status': 200, 'redis_data': True, 'response_length': 2, 'redis_length': 2},
+        [
+            {
+                'uuid': 'b1a2aae8-5c9e-4583-b89e-883c0d0c969a',
+                'title': 'Star Trek: Elite Force II',
+                'imdb_rating': 8.5
+            },
+            {
+                'uuid': 'db594b91-a587-48c4-bac9-5c6be5e4cf33',
+                'title': 'Star Trek: Starfleet Academy',
+                'imdb_rating': 8.1
+            }
+        ]
     ),
     (
         '?size=2&number=0',
         {'status': 200, 'redis_data': True, 'response_length': 2, 'redis_length': 2},
+        [
+            {
+                'uuid': 'b1a2aae8-5c9e-4583-b89e-883c0d0c969a',
+                'title': 'Star Trek: Elite Force II',
+                'imdb_rating': 8.5
+            },
+            {
+                'uuid': 'db594b91-a587-48c4-bac9-5c6be5e4cf33',
+                'title': 'Star Trek: Starfleet Academy',
+                'imdb_rating': 8.1
+            }
+        ]
     ),
     (
         '?size=-10&number=0',
         {'status': 422, 'redis_data': False, 'response_length': 1, 'redis_length': 0},
+        {
+            'detail': [
+                {
+                    'loc': [
+                        'query',
+                        'size'
+                    ],
+                    'msg': 'ensure this value is greater than or equal to 1',
+                    'type': 'value_error.number.not_ge',
+                    'ctx': {
+                        'limit_value': 1
+                    }
+                }
+            ]
+        }
     ),
     (
         '?size=1&number=-500',
         {'status': 200, 'redis_data': True, 'response_length': 1, 'redis_length': 1},
+        [
+            {
+                'uuid': 'b1a2aae8-5c9e-4583-b89e-883c0d0c969a',
+                'title': 'Star Trek: Elite Force II',
+                'imdb_rating': 8.5
+            },
+        ]
     ),
     (
         '?sizeee=13&nuumber=-500',
         {'status': 200, 'redis_data': True, 'response_length': 2, 'redis_length': 2},
+        [
+            {
+                'uuid': 'b1a2aae8-5c9e-4583-b89e-883c0d0c969a',
+                'title': 'Star Trek: Elite Force II',
+                'imdb_rating': 8.5
+            },
+            {
+                'uuid': 'db594b91-a587-48c4-bac9-5c6be5e4cf33',
+                'title': 'Star Trek: Starfleet Academy',
+                'imdb_rating': 8.1
+            }
+        ]
     ),
 ]
 
@@ -248,6 +306,18 @@ test_data_for_films_sort = [
             'redis_length': 2,
             'comparison': 0,
         },
+        [
+            {
+                'uuid': 'b1a2aae8-5c9e-4583-b89e-883c0d0c969a',
+                'title': 'Star Trek: Elite Force II',
+                'imdb_rating': 8.5
+            },
+            {
+                'uuid': 'db594b91-a587-48c4-bac9-5c6be5e4cf33',
+                'title': 'Star Trek: Starfleet Academy',
+                'imdb_rating': 8.1
+            }
+        ]
     ),
     (
         '?sort=-imdb_rating',
@@ -258,6 +328,18 @@ test_data_for_films_sort = [
             'redis_length': 2,
             'comparison': 0,
         },
+        [
+            {
+                'uuid': 'b1a2aae8-5c9e-4583-b89e-883c0d0c969a',
+                'title': 'Star Trek: Elite Force II',
+                'imdb_rating': 8.5
+            },
+            {
+                'uuid': 'db594b91-a587-48c4-bac9-5c6be5e4cf33',
+                'title': 'Star Trek: Starfleet Academy',
+                'imdb_rating': 8.1
+            },
+        ]
     ),
     (
         '?sort=imdb_rating',
@@ -268,6 +350,18 @@ test_data_for_films_sort = [
             'redis_length': 2,
             'comparison': 1,
         },
+        [
+            {
+                'uuid': 'db594b91-a587-48c4-bac9-5c6be5e4cf33',
+                'title': 'Star Trek: Starfleet Academy',
+                'imdb_rating': 8.1
+            },
+            {
+                'uuid': 'b1a2aae8-5c9e-4583-b89e-883c0d0c969a',
+                'title': 'Star Trek: Elite Force II',
+                'imdb_rating': 8.5
+            }
+        ]
     ),
     (
         '?sooort=imdb_rating',
@@ -278,6 +372,18 @@ test_data_for_films_sort = [
             'redis_length': 2,
             'comparison': 0,
         },
+        [
+            {
+                'uuid': 'b1a2aae8-5c9e-4583-b89e-883c0d0c969a',
+                'title': 'Star Trek: Elite Force II',
+                'imdb_rating': 8.5
+            },
+            {
+                'uuid': 'db594b91-a587-48c4-bac9-5c6be5e4cf33',
+                'title': 'Star Trek: Starfleet Academy',
+                'imdb_rating': 8.1
+            }
+        ]
     ),
     (
         '?sort=imdb_raaaating',
@@ -288,6 +394,25 @@ test_data_for_films_sort = [
             'redis_length': 0,
             'comparison': 2,
         },
+        {
+            'detail': [
+                {
+                    'loc': [
+                        'query',
+                        'sort'
+                    ],
+                    'msg': "unexpected value; permitted: 'imdb_rating', '-imdb_rating'",
+                    'type': 'value_error.const',
+                    'ctx': {
+                        'given': 'imdb_raaaating',
+                        'permitted': [
+                            'imdb_rating',
+                            '-imdb_rating'
+                        ]
+                    }
+                }
+            ]
+        }
     ),
 ]
 
@@ -296,31 +421,79 @@ test_data_for_films_filter_nested = [
         {'genres': '3d8d9bf5-0d90-4353-88ba-4ccc5d2c07ff'},
         '?filter[genres]=3d8d9bf5-0d90-4353-88ba-4ccc5d2c07ff&size=2&number=0',
         {'status': 200, 'redis_data': True, 'response_length': 2, 'redis_length': 2},
+        [
+            {
+                'uuid': 'b1a2aae8-5c9e-4583-b89e-883c0d0c969a',
+                'title': 'Star Trek: Elite Force II',
+                'imdb_rating': 8.5
+            },
+            {
+                'uuid': 'db594b91-a587-48c4-bac9-5c6be5e4cf33',
+                'title': 'Star Trek: Starfleet Academy',
+                'imdb_rating': 8.1
+            },
+        ]
     ),
     (
         {'genres': '3d8d9bf5-0d90-4353-88ba-4ccc5d2c07f'},
         '?filter[genres]=3d8d9bf5-0d90-4353-88ba-4ccc5d2c07f&size=5&number=0',
         {'status': 404, 'redis_data': False, 'response_length': 1, 'redis_length': 0},
+        {
+            'detail': 'Film not found'
+        }
     ),
     (
         None,
         '?filterrr[genres]=3d8d9bf5-0d90-4353-88ba-4ccc5d2c07f&size=2&number=0',
         {'status': 200, 'redis_data': True, 'response_length': 2, 'redis_length': 2},
+        [
+            {
+                'uuid': 'b1a2aae8-5c9e-4583-b89e-883c0d0c969a',
+                'title': 'Star Trek: Elite Force II',
+                'imdb_rating': 8.5
+            },
+            {
+                'uuid': 'db594b91-a587-48c4-bac9-5c6be5e4cf33',
+                'title': 'Star Trek: Starfleet Academy',
+                'imdb_rating': 8.1
+            },
+        ]
     ),
     (
         {'actors': 'd1507689-c396-4603-89ed-825022d64296'},
         '?filter[actors]=d1507689-c396-4603-89ed-825022d64296&size=1&number=0',
         {'status': 200, 'redis_data': True, 'response_length': 1, 'redis_length': 1},
+        [
+            {
+                'uuid': 'b1a2aae8-5c9e-4583-b89e-883c0d0c969a',
+                'title': 'Star Trek: Elite Force II',
+                'imdb_rating': 8.5
+            }
+        ]
     ),
     (
         {'writers': '57a471b1-09dc-48fd-ba8a-1211015a0110'},
         '?filter[writers]=57a471b1-09dc-48fd-ba8a-1211015a0110&size=1&number=0',
         {'status': 200, 'redis_data': True, 'response_length': 1, 'redis_length': 1},
+        [
+            {
+                'uuid': 'b1a2aae8-5c9e-4583-b89e-883c0d0c969a',
+                'title': 'Star Trek: Elite Force II',
+                'imdb_rating': 8.5
+            }
+        ]
     ),
     (
         {'directors': '34e69ed1-68d7-47e5-9621-e4607e2e4f68'},
         '?filter[directors]=34e69ed1-68d7-47e5-9621-e4607e2e4f68&size=1&number=0',
         {'status': 200, 'redis_data': True, 'response_length': 1, 'redis_length': 1},
+        [
+            {
+                'uuid': 'db594b91-a587-48c4-bac9-5c6be5e4cf33',
+                'title': 'Star Trek: Starfleet Academy',
+                'imdb_rating': 8.1
+            }
+        ]
     ),
     (
         {
@@ -333,6 +506,13 @@ test_data_for_films_filter_nested = [
         '=34e69ed1-68d7-47e5-9621-e4607e2e4f68&filter[writers]=998acbe6-dd4b-4f93-9996-0efac51d5b95&filter'
         '[genres]=120a21cf-9097-479e-904a-13dd7198c1dd',
         {'status': 200, 'redis_data': True, 'response_length': 1, 'redis_length': 1},
+        [
+            {
+                'uuid': 'db594b91-a587-48c4-bac9-5c6be5e4cf33',
+                'title': 'Star Trek: Starfleet Academy',
+                'imdb_rating': 8.1
+            }
+        ]
     ),
 ]
 
@@ -341,26 +521,57 @@ test_data_for_films_filter_simple = [
         {'id': 'b1a2aae8-5c9e-4583-b89e-883c0d0c969a'},
         '?size=1&number=0&filter[id]=b1a2aae8-5c9e-4583-b89e-883c0d0c969a',
         {'status': 200, 'redis_data': True, 'response_length': 1, 'redis_length': 1},
+        [
+            {
+                'uuid': 'b1a2aae8-5c9e-4583-b89e-883c0d0c969a',
+                'title': 'Star Trek: Elite Force II',
+                'imdb_rating': 8.5
+            }
+        ]
     ),
     (
         {'id': '87c64348-61a0-4e6c-99c5-a6bd8b0bcbc'},
         '?size=1&number=0&filter[id]=87c64348-61a0-4e6c-99c5-a6bd8b0bcbc',
         {'status': 404, 'redis_data': False, 'response_length': 1, 'redis_length': 0},
+        {
+            'detail': 'Film not found'
+        }
     ),
     (
         {'imdb_rating': 8.1},
         '?size=1&number=0&filter[imdb_rating]=8.1',
         {'status': 200, 'redis_data': True, 'response_length': 1, 'redis_length': 1},
+        [
+            {
+                'uuid': 'db594b91-a587-48c4-bac9-5c6be5e4cf33',
+                'title': 'Star Trek: Starfleet Academy',
+                'imdb_rating': 8.1
+            }
+        ]
     ),
     (
         {'title': 'Academy'},
         '?size=50&number=0&filter[title]=Academy',
         {'status': 200, 'redis_data': True, 'response_length': 1, 'redis_length': 1},
+        [
+            {
+                'uuid': 'db594b91-a587-48c4-bac9-5c6be5e4cf33',
+                'title': 'Star Trek: Starfleet Academy',
+                'imdb_rating': 8.1
+            }
+        ]
     ),
     (
         {'description': 'Dallas'},
         '?size=50&number=0&filter[description]=Dallas',
         {'status': 200, 'redis_data': True, 'response_length': 1, 'redis_length': 1},
+        [
+            {
+                'uuid': 'b1a2aae8-5c9e-4583-b89e-883c0d0c969a',
+                'title': 'Star Trek: Elite Force II',
+                'imdb_rating': 8.5
+            }
+        ]
     ),
     (
         {
@@ -372,6 +583,13 @@ test_data_for_films_filter_simple = [
         '?size=50&number=0&filter[description]=Dallas&filter[title]=Elite'
         '[imdb_rating]=8.5&filter[id]=b1a2aae8-5c9e-4583-b89e-883c0d0c969a',
         {'status': 200, 'redis_data': True, 'response_length': 1, 'redis_length': 1},
+        [
+            {
+                'uuid': 'b1a2aae8-5c9e-4583-b89e-883c0d0c969a',
+                'title': 'Star Trek: Elite Force II',
+                'imdb_rating': 8.5
+            }
+        ]
     ),
 ]
 
@@ -381,14 +599,14 @@ test_data_for_films_search = [
         {'status': 200, 'redis_data': True, 'response_length': 2, 'redis_length': 2},
         [
             {
-                "uuid": "db594b91-a587-48c4-bac9-5c6be5e4cf33",
-                "title": "Star Trek: Starfleet Academy",
-                "imdb_rating": 8.1
+                'uuid': 'db594b91-a587-48c4-bac9-5c6be5e4cf33',
+                'title': 'Star Trek: Starfleet Academy',
+                'imdb_rating': 8.1
             },
             {
-                "uuid": "b1a2aae8-5c9e-4583-b89e-883c0d0c969a",
-                "title": "Star Trek: Elite Force II",
-                "imdb_rating": 8.5
+                'uuid': 'b1a2aae8-5c9e-4583-b89e-883c0d0c969a',
+                'title': 'Star Trek: Elite Force II',
+                'imdb_rating': 8.5
             }
         ]
     ),
@@ -396,14 +614,14 @@ test_data_for_films_search = [
         '',
         {'status': 422, 'redis_data': False, 'response_length': 1, 'redis_length': 0},
         {
-            "detail": [
+            'detail': [
                 {
-                    "loc": [
-                        "query",
-                        "query"
+                    'loc': [
+                        'query',
+                        'query'
                     ],
-                    "msg": "field required",
-                    "type": "value_error.missing"
+                    'msg': 'field required',
+                    'type': 'value_error.missing'
                 }
             ]
         }

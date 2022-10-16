@@ -10,6 +10,7 @@ from tests.functional.testdata.films import (test_data_for_film,
                                              test_data_for_films_pagination,
                                              test_data_for_films_search,
                                              test_data_for_films_sort)
+from tests.functional.utils.helpers import prepare_redis_film
 
 conf = get_settings()
 
@@ -19,7 +20,8 @@ conf = get_settings()
 )
 @pytest.mark.asyncio
 async def test_get_film_by_id(
-    film_works_api_client: AsyncClient, redis_pool: Redis, id_film: str, expected_body: dict, expected_answer: dict
+    film_works_api_client: AsyncClient, redis_pool: Redis, redis_flushall,
+    id_film: str, expected_body: dict, expected_answer: dict
 ):
     """
     Тест для подробного просмотра film.
@@ -31,21 +33,22 @@ async def test_get_film_by_id(
     """
     response = await film_works_api_client.get(f'/api/v1/films/{id_film}')
     response_body = response.json()
-    redis_data = await redis_pool.get(id_film)
     if expected_answer['redis_data']:
-        assert redis_data
-    else:
-        assert not redis_data
+        redis_film = prepare_redis_film(await redis_pool.get(id_film))
+        assert redis_film['uuid'] == expected_body['uuid']
+        assert redis_film['title'] == expected_body['title']
+        assert redis_film['imdb_rating'] == expected_body['imdb_rating']
     assert response.status_code == expected_answer['status']
     assert response_body == expected_body
 
 
 @pytest.mark.parametrize(
-    'query_param, expected_answer', test_data_for_films_pagination
+    'query_param, expected_answer, expected_body', test_data_for_films_pagination
 )
 @pytest.mark.asyncio
 async def test_films_pagination(
-    film_works_api_client: AsyncClient, redis_pool: Redis, expected_answer: dict, query_param: str
+    film_works_api_client: AsyncClient, redis_pool: Redis,
+    redis_flushall, expected_body, expected_answer: dict, query_param: str
 ):
     """
     Тест на корректную работу пагинации при запросе к films.
@@ -59,20 +62,21 @@ async def test_films_pagination(
     response_body = response.json()
     redis_data = await redis_pool.lrange(f'{conf.BASE_URL}/api/v1/films/{query_param}', 0, -1)
     if expected_answer['redis_data']:
-        assert redis_data
-    else:
-        assert not redis_data
+        films = [prepare_redis_film(film) for film in redis_data]
+        assert films[::-1] == expected_body
     assert len(redis_data) == expected_answer['redis_length']
     assert response.status_code == expected_answer['status']
     assert len(response_body) == expected_answer['response_length']
+    assert response_body == expected_body
 
 
 @pytest.mark.parametrize(
-    'query_param, expected_answer', test_data_for_films_sort
+    'query_param, expected_answer, expected_body', test_data_for_films_sort
 )
 @pytest.mark.asyncio
 async def test_films_sort(
-    film_works_api_client: AsyncClient, redis_pool: Redis, expected_answer: dict, query_param: str
+    film_works_api_client: AsyncClient, redis_pool: Redis,
+    redis_flushall, expected_body, expected_answer: dict, query_param: str
 ):
     """
     Тест на корректную работу сортировки при запросе к films.
@@ -87,9 +91,8 @@ async def test_films_sort(
     response_body = response.json()
     redis_data = await redis_pool.lrange(f'{conf.BASE_URL}/api/v1/films/{query_param}', 0, -1)
     if expected_answer['redis_data']:
-        assert redis_data
-    else:
-        assert not redis_data
+        films = [prepare_redis_film(film) for film in redis_data]
+        assert films[::-1] == expected_body
     if expected_answer['comparison'] == 0:
         assert response_body[0]['imdb_rating'] >= response_body[-1]['imdb_rating']
     elif expected_answer['comparison'] == 1:
@@ -97,14 +100,16 @@ async def test_films_sort(
     assert len(redis_data) == expected_answer['redis_length']
     assert response.status_code == expected_answer['status']
     assert len(response_body) == expected_answer['response_length']
+    assert response_body == expected_body
 
 
 @pytest.mark.parametrize(
-    'filter_name, query_param, expected_answer', test_data_for_films_filter_nested
+    'filter_name, query_param, expected_answer, expected_body', test_data_for_films_filter_nested
 )
 @pytest.mark.asyncio
 async def test_films_filter_nested(
-    film_works_api_client: AsyncClient, redis_pool: Redis, expected_answer: dict, query_param: str, filter_name: dict
+    film_works_api_client: AsyncClient, redis_pool: Redis,
+    redis_flushall, expected_body, expected_answer: dict, query_param: str, filter_name: dict
 ):
     """
     Тест на корректную работу вложенных фильтров при запросе к films.
@@ -120,6 +125,8 @@ async def test_films_filter_nested(
     redis_data = await redis_pool.lrange(f'{conf.BASE_URL}/api/v1/films/{query_param}', 0, -1)
     if expected_answer['redis_data']:
         assert redis_data
+        films = [prepare_redis_film(film) for film in redis_data]
+        assert films[::-1] == expected_body
         if filter_name:
             for item in redis_data:
                 for filter_ in filter_name:
@@ -131,14 +138,16 @@ async def test_films_filter_nested(
     assert len(redis_data) == expected_answer['redis_length']
     assert response.status_code == expected_answer['status']
     assert len(response_body) == expected_answer['response_length']
+    assert response_body == expected_body
 
 
 @pytest.mark.parametrize(
-    'filter_name, query_param, expected_answer', test_data_for_films_filter_simple
+    'filter_name, query_param, expected_answer, expected_body', test_data_for_films_filter_simple
 )
 @pytest.mark.asyncio
 async def test_films_filter_simple(
-    film_works_api_client: AsyncClient, redis_pool: Redis, expected_answer: dict, query_param: str, filter_name: dict
+    film_works_api_client: AsyncClient, redis_pool: Redis,
+    redis_flushall, expected_body, expected_answer: dict, query_param: str, filter_name: dict
 ):
     """
     Тест на корректную работу простых фильтров при запросе к films.
@@ -154,6 +163,8 @@ async def test_films_filter_simple(
     redis_data = await redis_pool.lrange(f'{conf.BASE_URL}/api/v1/films/{query_param}', 0, -1)
     if expected_answer['redis_data']:
         assert redis_data
+        films = [prepare_redis_film(film) for film in redis_data]
+        assert films[::-1] == expected_body
         if filter_name:
             for item in redis_data:
                 for filter_ in filter_name:
@@ -164,6 +175,7 @@ async def test_films_filter_simple(
     assert len(redis_data) == expected_answer['redis_length']
     assert response.status_code == expected_answer['status']
     assert len(response_body) == expected_answer['response_length']
+    assert response_body == expected_body
 
 
 @pytest.mark.parametrize(
@@ -171,7 +183,8 @@ async def test_films_filter_simple(
 )
 @pytest.mark.asyncio
 async def test_films_search(
-    film_works_api_client: AsyncClient, redis_pool: Redis, expected_answer: dict, query_param: str, expected_body
+    film_works_api_client: AsyncClient, redis_pool: Redis,
+    redis_flushall, expected_answer: dict, query_param: str, expected_body
 ):
     """
     Тест на корректную поиска при запросе к films/search.
@@ -185,9 +198,8 @@ async def test_films_search(
     response_body = response.json()
     redis_data = await redis_pool.lrange(f'{conf.BASE_URL}/api/v1/films/search{query_param}', 0, -1)
     if expected_answer['redis_data']:
-        assert redis_data
-    else:
-        assert not redis_data
+        films = [prepare_redis_film(film) for film in redis_data]
+        assert films[::-1] == expected_body
     assert len(redis_data) == expected_answer['redis_length']
     assert response.status_code == expected_answer['status']
     assert len(response_body) == expected_answer['response_length']
