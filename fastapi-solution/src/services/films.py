@@ -8,8 +8,8 @@ from db.elastic import AsyncSearchEngine, get_elastic_storage
 from db.redis import AsyncCacheStorage, get_redis_storage
 from models.common import FilterSimpleValues, FilterNestedValues
 from models.main import Film, Person, PersonFilm
-from services.elastic import ElasticService
-from services.redis import RedisService
+from services.cache import CacheService
+from services.search_engine import SearchEngineService
 
 conf = get_settings()
 
@@ -19,8 +19,8 @@ class FilmService:
 
     def __init__(self, cache_storage: AsyncCacheStorage, search_engine_storage: AsyncSearchEngine):
         """Инициализация сервиса."""
-        self.cache_service = RedisService(cache_storage)
-        self.search_engine_service = ElasticService(search_engine_storage, 'movies')
+        self.cache_service = CacheService(cache_storage)
+        self.search_engine_service = SearchEngineService(search_engine_storage, 'movies')
         self.person_roles = ['writers', 'actors', 'directors']
 
     async def get_by_id(self, film_id: str) -> Optional[Film]:
@@ -231,41 +231,41 @@ class FilmService:
         """Возвращает результат запроса к elastic для поиска персон."""
         return await self.search_engine_service.search(
             query={
-                    'bool': {
-                        'should': [
-                            {
-                                'nested': {
-                                    'path': 'writers',
-                                    'query': {
-                                        'terms': {
-                                            'writers.id': person_ids,
-                                        },
+                'bool': {
+                    'should': [
+                        {
+                            'nested': {
+                                'path': 'writers',
+                                'query': {
+                                    'terms': {
+                                        'writers.id': person_ids,
                                     },
                                 },
                             },
-                            {
-                                'nested': {
-                                    'path': 'actors',
-                                    'query': {
-                                        'terms': {
-                                            'actors.id': person_ids,
-                                        },
+                        },
+                        {
+                            'nested': {
+                                'path': 'actors',
+                                'query': {
+                                    'terms': {
+                                        'actors.id': person_ids,
                                     },
                                 },
                             },
-                            {
-                                'nested': {
-                                    'path': 'directors',
-                                    'query': {
-                                        'terms': {
-                                            'directors.id': person_ids,
-                                        },
+                        },
+                        {
+                            'nested': {
+                                'path': 'directors',
+                                'query': {
+                                    'terms': {
+                                        'directors.id': person_ids,
                                     },
                                 },
                             },
-                        ],
-                    },
+                        },
+                    ],
                 },
+            },
         )
 
     async def _films_from_cache(self, url: str):

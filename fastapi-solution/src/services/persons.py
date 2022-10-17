@@ -7,8 +7,8 @@ from core.config import get_settings
 from db.elastic import get_elastic_storage, AsyncSearchEngine
 from db.redis import get_redis_storage, AsyncCacheStorage
 from models.main import Person
-from services.elastic import ElasticService
-from services.redis import RedisService
+from services.search_engine import SearchEngineService
+from services.cache import CacheService
 
 conf = get_settings()
 
@@ -18,8 +18,8 @@ class PersonService:
 
     def __init__(self, cache_storage: AsyncCacheStorage, search_engine_storage: AsyncSearchEngine):
         """Инициализация сервиса."""
-        self.cache_service = RedisService(cache_storage)
-        self.search_engine_service = ElasticService(search_engine_storage, 'persons')
+        self.cache_service = CacheService(cache_storage)
+        self.search_engine_service = SearchEngineService(search_engine_storage, 'persons')
 
     async def get_by_id(self, person_id: str) -> Optional[Person]:
         """Возвращает участника фильма по идентификатору."""
