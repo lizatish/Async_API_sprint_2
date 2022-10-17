@@ -1,15 +1,14 @@
 from functools import lru_cache
 from typing import Optional, List
 
-from elasticsearch import NotFoundError
 from fastapi import Depends
 
 from core.config import get_settings
-from db.elastic import get_elastic
-from db.redis import get_redis
-from db.storage import AsyncCacheStorage, AsyncSearchEngine
+from db.elastic import AsyncSearchEngine, get_elastic_storage
+from db.redis import AsyncCacheStorage, get_redis_storage
 from models.common import FilterSimpleValues, FilterNestedValues
 from models.main import Film, Person, PersonFilm
+from services.elastic import ElasticService
 
 conf = get_settings()
 
@@ -17,12 +16,10 @@ conf = get_settings()
 class FilmService:
     """Сервис для работы с фильмами."""
 
-    def __init__(self, cache: AsyncCacheStorage, elastic: AsyncSearchEngine):
+    def __init__(self, cache: AsyncCacheStorage, search_engine_service: AsyncSearchEngine):
         """Инициализация сервиса."""
         self.cache = cache
-        self.elastic = elastic
-
-        self.es_index = 'movies'
+        self.search_engine_service = ElasticService(search_engine_service, 'movies')
         self.person_roles = ['writers', 'actors', 'directors']
 
     async def get_by_id(self, film_id: str) -> Optional[Film]:
@@ -44,9 +41,8 @@ class FilmService:
             films = await self._get_scope_films_from_elastic(
                 from_=from_, size=size, sort=sort, filter_=filter,
             )
-            if not films:
-                return None
-            await self._put_films_to_cache(films, url)
+            if films:
+                await self._put_films_to_cache(films, url)
         return films
 
     async def search_film(
@@ -58,25 +54,19 @@ class FilmService:
             films = await self._search_film_from_elastic(
                 query=query, from_=from_, size=size,
             )
-            if not films:
-                return None
-            await self._put_films_to_cache(films, url)
+            if films:
+                await self._put_films_to_cache(films, url)
         return films
 
     async def get_films_by_person(self, person_id: str) -> List[Optional[Film]]:
         """Возвращает фильмы, в которых участвовала персона."""
         films = await self._films_from_cache(f'film_by_person_{person_id}')
         if not films:
-            films = []
-            try:
-                docs = await self._get_by_person_ids_from_elastic([person_id])
-                for doc in docs['hits']['hits']:
-                    source = doc['_source']
-                    films.append(Film(**source))
-                if films:
-                    await self._put_films_to_cache(films, f'film_by_person_{person_id}')
-            except NotFoundError:
-                pass
+            docs = await self._get_by_person_ids_from_elastic([person_id])
+            if docs:
+                films = [Film(**doc['_source']) for doc in docs]
+                await self._put_films_to_cache(films, f'film_by_person_{person_id}')
+
         return films
 
     async def get_person_by_id(self, person_id: str) -> Optional[Person]:
@@ -94,108 +84,86 @@ class FilmService:
         persons = await self._persons_from_cache('-'.join(person_ids))
         if not persons:
             persons = []
-            try:
-                docs = await self._get_by_person_ids_from_elastic(person_ids)
-                for person_id in person_ids:
-                    person = await self._prepare_person(person_id, docs)
-                    persons.append(person)
-                await self._put_persons_to_cache(persons, '-'.join(person_ids))
-            except NotFoundError:
-                pass
+            docs = await self._get_by_person_ids_from_elastic(person_ids)
+            for person_id in person_ids:
+                person = await self._prepare_person(person_id, docs)
+                persons.append(person)
+            await self._put_persons_to_cache(persons, '-'.join(person_ids))
         return persons
 
-    async def _get_person_from_elastic(self, person_id: str) -> Optional[Optional[Person]]:
+    async def _get_person_from_elastic(self, person_id: str) -> Optional[Person]:
         """Возвращает персону из эластика."""
-        person = None
-        try:
-            docs = await self._get_by_person_ids_from_elastic([person_id])
-            person = await self._prepare_person(person_id, docs)
-        except NotFoundError:
-            pass
-        return person
+        docs = await self._get_by_person_ids_from_elastic([person_id])
+        return await self._prepare_person(person_id, docs)
 
     async def _search_film_from_elastic(
             self, query: str, from_: int, size: int,
     ) -> Optional[List[Film]]:
         """Функция для поиска фильма в elasticsearch."""
-        try:
-            doc = await self.elastic.search(
-                index=self.es_index,
-                from_=from_,
-                size=size,
-                body={
-                    'query': {
-                        'multi_match': {
-                            'query': f'{query}',
-                            'fuzziness': 'auto',
-                        },
-                    },
+        body = {
+            'query': {
+                'multi_match': {
+                    'query': f'{query}',
+                    'fuzziness': 'auto',
                 },
-            )
-        except NotFoundError:
-            return None
-        return [Film(**hit['_source']) for hit in doc['hits']['hits']]
+            },
+        }
+        docs = await self.search_engine_service.search(from_=from_, size=size, body=body)
+        if not docs:
+            return docs
+        return [Film(**hit['_source']) for hit in docs]
 
     async def _get_scope_films_from_elastic(
             self, from_: int, size: int, filter_: dict, sort: str,
     ) -> Optional[List[Film]]:
         """Функция для поиска фильмов в elasticsearch в соот. фильтрам."""
-        try:
-            if filter_:
-
-                filter_nested_values = FilterNestedValues.get_values()
-                filter_simple_values = FilterSimpleValues.get_values()
-                body = []
-                for key in filter_:
-                    if key in filter_nested_values:
-                        body.append(
-                            {
-                                'nested': {
-                                    'path': f'{key}',
-                                    'query': {
-                                        'bool': {
-                                            'must': [
-                                                {
-                                                    'match': {
-                                                        f'{key}.id': f'{filter_[key]}',
-                                                    },
+        if filter_:
+            filter_nested_values = FilterNestedValues.get_values()
+            filter_simple_values = FilterSimpleValues.get_values()
+            body = []
+            for key in filter_:
+                if key in filter_nested_values:
+                    body.append(
+                        {
+                            'nested': {
+                                'path': f'{key}',
+                                'query': {
+                                    'bool': {
+                                        'must': [
+                                            {
+                                                'match': {
+                                                    f'{key}.id': f'{filter_[key]}',
                                                 },
-                                            ],
-                                        },
+                                            },
+                                        ],
                                     },
                                 },
                             },
-                        )
-                    elif key in filter_simple_values:
-                        body.append({'match': {f'{key}': f'{filter_[key]}'}})
+                        },
+                    )
+                elif key in filter_simple_values:
+                    body.append({'match': {f'{key}': f'{filter_[key]}'}})
 
-                doc = await self.elastic.search(
-                    index=self.es_index,
-                    from_=from_,
-                    size=size,
-                    sort=f'{sort[1:]}:desc' if sort[0] == '-'
-                    else f'{sort}:asc',
-                    body={
-                        'query': {'bool': {'must': body}},
-                    },
-                )
-            else:
-                doc = await self.elastic.search(
-                    index=self.es_index,
-                    from_=from_,
-                    size=size,
-                    sort=f'{sort[1:]}:desc' if sort[0] == '-'
-                    else f'{sort}:asc',
-                )
-        except NotFoundError:
-            return None
-        return [Film(**hit['_source']) for hit in doc['hits']['hits']]
+            doc = await self.search_engine_service.search(
+                from_=from_,
+                size=size,
+                sort=f'{sort[1:]}:desc' if sort[0] == '-'
+                else f'{sort}:asc',
+                body={'query': {'bool': {'must': body}}},
+            )
+        else:
+            doc = await self.search_engine_service.search(
+                from_=from_,
+                size=size,
+                sort=f'{sort[1:]}:desc' if sort[0] == '-'
+                else f'{sort}:asc',
+            )
+        return [Film(**hit['_source']) for hit in doc]
 
     async def _get_film_from_elastic(self, film_id: str) -> Optional[Film]:
         """Функция для поиска фильма в elasticsearch по id."""
-        try:
-            doc = await self.elastic.get(index=self.es_index, id=film_id)
-        except NotFoundError:
+        doc = await self.search_engine_service.get(doc_id=film_id)
+        if not doc:
             return None
         return Film(**doc['_source'])
 
@@ -204,8 +172,7 @@ class FilmService:
         data = await self.cache.get(film_id)
         if not data:
             return None
-        film = Film.parse_raw(data)
-        return film
+        return Film.parse_raw(data)
 
     async def _put_film_to_cache(self, film: Film):
         """Функция кладёт фильм по id в кэш."""
@@ -225,7 +192,7 @@ class FilmService:
         """Подготавливает полные данные по персоне и возвращает их."""
         person = None
         persons_roles = {}
-        for doc in docs['hits']['hits']:
+        for doc in docs:
             source = doc['_source']
 
             for role in self.person_roles:
@@ -263,9 +230,7 @@ class FilmService:
 
     async def _get_by_person_ids_from_elastic(self, person_ids: List[str]) -> dict:
         """Возвращает результат запроса к elastic для поиска персон."""
-        return await self.elastic.search(
-            index=self.es_index,
-            size=conf.ELASTIC_DEFAULT_OUTPUT_RECORDS_SIZE,
+        return await self.search_engine_service.search(
             body={
                 'query': {
                     'bool': {
@@ -333,9 +298,7 @@ class FilmService:
     async def _put_persons_to_cache(self, persons: List[Person], url: str):
         """Функция кладёт список персон в кэш."""
         data = [item.json() for item in persons]
-        await self.cache.lpush(
-            url, *data,
-        )
+        await self.cache.lpush(url, *data)
         await self.cache.expire(url, conf.PERSON_CACHE_EXPIRE_IN_SECONDS)
 
     async def _put_person_to_cache(self, person: Person):
@@ -345,8 +308,8 @@ class FilmService:
 
 @lru_cache()
 def get_film_service(
-        redis: AsyncCacheStorage = Depends(get_redis),
-        elastic: AsyncSearchEngine = Depends(get_elastic),
+        cache_storage: AsyncCacheStorage = Depends(get_redis_storage),
+        search_engine_service: AsyncSearchEngine = Depends(get_elastic_storage),
 ) -> FilmService:
     """Возвращает экземпляр сервиса для работы с кинопроизведениями."""
-    return FilmService(redis, elastic)
+    return FilmService(cache_storage, search_engine_service)

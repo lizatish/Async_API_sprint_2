@@ -1,15 +1,13 @@
 from functools import lru_cache
 from typing import Optional, List
 
-from elasticsearch import NotFoundError
 from fastapi import Depends
 
 from core.config import get_settings
-from db.elastic import get_elastic
-from db.redis import get_redis
-from db.storage import AsyncCacheStorage
-from db.storage import AsyncSearchEngine
+from db.elastic import get_elastic_storage, AsyncSearchEngine
+from db.redis import get_redis_storage, AsyncCacheStorage
 from models.main import Person
+from services.elastic import ElasticService
 
 conf = get_settings()
 
@@ -17,12 +15,10 @@ conf = get_settings()
 class PersonService:
     """Сервис для работы с участниками фильма."""
 
-    def __init__(self, cache: AsyncCacheStorage, elastic: AsyncSearchEngine):
+    def __init__(self, cache_storage: AsyncCacheStorage, search_engine_storage: AsyncSearchEngine):
         """Инициализация сервиса."""
-        self.cache = cache
-        self.elastic = elastic
-
-        self.es_index = 'persons'
+        self.cache = cache_storage
+        self.search_engine_service = ElasticService(search_engine_storage, 'persons')
 
     async def get_by_id(self, person_id: str) -> Optional[Person]:
         """Возвращает участника фильма по идентификатору."""
@@ -44,32 +40,27 @@ class PersonService:
             await self._put_persons_to_cache(persons, url)
         return persons
 
-    async def _search_person_from_elastic(self, query: str, from_: int, size: int) -> Optional[List[Person]]:
+    async def _search_person_from_elastic(self, query: str, from_: int, size: int) -> List[Person]:
         """Ищет данные по персоне в индексе персон."""
-        try:
-            if query:
-                doc = await self.elastic.search(
-                    index=self.es_index,
-                    from_=from_,
-                    size=size,
-                    body={
-                        'query': {
-                            'multi_match': {
-                                'query': f'{query}',
-                                'fuzziness': 'auto',
-                            },
+        if query:
+            doc = await self.search_engine_service.search(
+                from_=from_,
+                size=size,
+                body={
+                    'query': {
+                        'multi_match': {
+                            'query': f'{query}',
+                            'fuzziness': 'auto',
                         },
                     },
-                )
-            else:
-                doc = await self.elastic.search(
-                    index=self.es_index,
-                    from_=from_,
-                    size=size,
-                )
-        except NotFoundError:
-            return None
-        return [Person(**hit['_source']) for hit in doc['hits']['hits']]
+                },
+            )
+        else:
+            doc = await self.search_engine_service.search(
+                from_=from_,
+                size=size,
+            )
+        return [Person(**hit['_source']) for hit in doc]
 
     async def enrich_person_data(self, main_person_info: Person, fw_person_info: Person) -> Person:
         """Обогащает данные по персоне, возвращает полные данные по персоне."""
@@ -108,28 +99,23 @@ class PersonService:
     async def _get_person_from_elastic(self, person_id: str) -> Optional[Person]:
         """Возвращает персону из эластика."""
         person = None
-        try:
-            docs = await self.elastic.search(
-                index=self.es_index,
-                body={
-                    'query': {
-                        'bool': {
-                            'must': [
-                                {
-                                    'match_phrase': {
-                                        'id': person_id,
-                                    },
+        doc = await self.search_engine_service.search(
+            body={
+                'query': {
+                    'bool': {
+                        'must': [
+                            {
+                                'match_phrase': {
+                                    'id': person_id,
                                 },
-                            ],
-                        },
+                            },
+                        ],
                     },
                 },
-            )
-            doc = docs['hits']['hits']
-            if doc:
-                person = Person(**doc[0]['_source'])
-        except NotFoundError:
-            pass
+            },
+        )
+        if doc:
+            person = Person(**doc[0]['_source'])
 
         return person
 
@@ -167,8 +153,8 @@ class PersonService:
 
 @lru_cache()
 def get_person_service(
-        redis: AsyncCacheStorage = Depends(get_redis),
-        elastic: AsyncSearchEngine = Depends(get_elastic),
+        cache_storage: AsyncCacheStorage = Depends(get_redis_storage),
+        search_engine_storage: AsyncSearchEngine = Depends(get_elastic_storage),
 ) -> PersonService:
     """Возвращает экземпляр сервиса для работы с участниками фильма."""
-    return PersonService(redis, elastic)
+    return PersonService(cache_storage, search_engine_storage)

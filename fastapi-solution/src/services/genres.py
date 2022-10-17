@@ -1,14 +1,13 @@
 from functools import lru_cache
 from typing import Optional, List
 
-from elasticsearch import NotFoundError
 from fastapi import Depends
 
 from core.config import get_settings
-from db.elastic import get_elastic
-from db.redis import get_redis
-from db.storage import AsyncCacheStorage, AsyncSearchEngine
+from db.elastic import get_elastic_storage, AsyncSearchEngine
+from db.redis import get_redis_storage, AsyncCacheStorage
 from models.main import Genre
+from services.elastic import ElasticService
 
 conf = get_settings()
 
@@ -16,36 +15,25 @@ conf = get_settings()
 class GenreService:
     """Сервис для работы с жанрами."""
 
-    def __init__(self, cache: AsyncCacheStorage, elastic: AsyncSearchEngine):
+    def __init__(self, cache: AsyncCacheStorage, search_engine_service: AsyncSearchEngine):
         """Инициализация сервиса."""
         self.cache = cache
-        self.elastic = elastic
-
-        self.es_index = 'genres'
+        self.search_engine_service = ElasticService(search_engine_service, 'genres')
 
     async def get_genres_list(self, url: str) -> List[Genre]:
         """Возвращает список всех жанров."""
         genres = await self._genres_from_cache(url)
         if not genres:
-            genres = []
-            try:
-                docs = await self.elastic.search(
-                    index=self.es_index,
-                    body={
-                        'size': 10000,
-                        'query': {
-                            'match_all': {},
-                        },
-                    },
-                )
-                genre_docs = docs['hits']['hits']
-                if genre_docs:
-                    for genre_doc in genre_docs:
-                        genres.append(Genre(**genre_doc['_source']))
-                    await self._put_genres_to_cache(genres, url)
-            except NotFoundError:
-                pass
-
+            body = {
+                'query': {
+                    'match_all': {},
+                }
+            }
+            docs = await self.search_engine_service.search(body=body)
+            genre_docs = docs
+            if genre_docs:
+                genres = [Genre(**genre_doc['_source']) for genre_doc in genre_docs]
+                await self._put_genres_to_cache(genres, url)
         return genres
 
     async def get_by_id(self, genre_id: str) -> Optional[Genre]:
@@ -53,37 +41,29 @@ class GenreService:
         genre = await self._genre_from_cache(genre_id)
         if not genre:
             genre = await self._get_genre_from_elastic(genre_id)
-            if not genre:
-                return None
-            await self._put_genre_to_cache(genre)
-
+            if genre:
+                await self._put_genre_to_cache(genre)
         return genre
 
     async def _get_genre_from_elastic(self, genre_id: str) -> Optional[Genre]:
         """Получает жанр из elastic."""
         genre = None
-        try:
-            docs = await self.elastic.search(
-                index=self.es_index,
-                body={
-                    'query': {
-                        'bool': {
-                            'must': [
-                                {
-                                    'match_phrase': {
-                                        'id': genre_id,
-                                    },
-                                },
-                            ],
+        body = {
+            'query': {
+                'bool': {
+                    'must': [
+                        {
+                            'match_phrase': {
+                                'id': genre_id,
+                            },
                         },
-                    },
+                    ],
                 },
-            )
-            doc = docs['hits']['hits']
-            if doc:
-                genre = Genre(**doc[0]['_source'])
-        except NotFoundError:
-            pass
+            },
+        }
+        doc = await self.search_engine_service.search(body=body)
+        if doc:
+            genre = Genre(**doc[0]['_source'])
 
         return genre
 
@@ -117,8 +97,8 @@ class GenreService:
 
 @lru_cache()
 def get_genre_service(
-        redis: AsyncCacheStorage = Depends(get_redis),
-        elastic: AsyncSearchEngine = Depends(get_elastic),
+        cache_storage: AsyncCacheStorage = Depends(get_redis_storage),
+        search_engine_service: AsyncSearchEngine = Depends(get_elastic_storage),
 ) -> GenreService:
     """Возвращает экземпляр сервиса для работы с жанрами."""
-    return GenreService(redis, elastic)
+    return GenreService(cache_storage, search_engine_service)
