@@ -25,12 +25,7 @@ class GenreService:
         """Возвращает список всех жанров."""
         genres = await self._genres_from_cache(url)
         if not genres:
-            body = {
-                'query': {
-                    'match_all': {},
-                }
-            }
-            docs = await self.search_engine_service.search(body=body)
+            docs = await self.search_engine_service.search(query={'match_all': {}})
             genre_docs = docs
             if genre_docs:
                 genres = [Genre(**genre_doc['_source']) for genre_doc in genre_docs]
@@ -49,20 +44,18 @@ class GenreService:
     async def _get_genre_from_elastic(self, genre_id: str) -> Optional[Genre]:
         """Получает жанр из elastic."""
         genre = None
-        body = {
-            'query': {
-                'bool': {
-                    'must': [
-                        {
-                            'match_phrase': {
-                                'id': genre_id,
-                            },
+        query = {
+            'bool': {
+                'must': [
+                    {
+                        'match_phrase': {
+                            'id': genre_id,
                         },
-                    ],
-                },
+                    },
+                ],
             },
         }
-        doc = await self.search_engine_service.search(body=body)
+        doc = await self.search_engine_service.search(query=query)
         if doc:
             genre = Genre(**doc[0]['_source'])
 

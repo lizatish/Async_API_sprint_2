@@ -32,7 +32,7 @@ async def films_scope(
     """
     from_ = ((paginator.page_number - 1) * paginator.page_size) if (paginator.page_number > 1) else 0
     films = await film_service.get_scope_films(
-        from_=from_, size=paginator.page_size, filter=filter, sort=sort, url=request.url._url,
+        paginate_from=from_, paginate_size=paginator.page_size, search_filter=filter, sort=sort, url=request.url._url,
     )
     if not films:
         raise FilmNotFound()
@@ -64,7 +64,7 @@ async def film_search(
     """
     from_ = ((paginator.page_number - 1) * paginator.page_size) if (paginator.page_number > 1) else 0
     films = await film_service.search_film(
-        from_=from_, size=paginator.page_size, query=query, url=request.url._url,
+        paginate_from=from_, search_size=paginator.page_size, search_query=query, url=request.url._url,
     )
     if not films:
         raise FilmNotFound()

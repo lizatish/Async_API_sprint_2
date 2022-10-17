@@ -34,26 +34,26 @@ class FilmService:
         return film
 
     async def get_scope_films(
-            self, from_: int, size: int, filter: dict, sort: str, url: str,
+            self, paginate_from: int, paginate_size: int, search_filter: dict, sort: str, url: str,
     ) -> Optional[List[Film]]:
         """Функция для получения списка фильмов."""
         films = await self._films_from_cache(url)
         if not films:
             films = await self._get_scope_films_from_elastic(
-                from_=from_, size=size, sort=sort, filter_=filter,
+                paginate_from=paginate_from, paginate_size=paginate_size, sort=sort, search_filter=search_filter,
             )
             if films:
                 await self._put_films_to_cache(films, url)
         return films
 
     async def search_film(
-            self, query: str, from_: int, size: int, url: str,
+            self, search_query: str, paginate_from: int, search_size: int, url: str,
     ) -> Optional[List[Film]]:
         """Функция для поиска фильма."""
         films = await self._films_from_cache(url)
         if not films:
             films = await self._search_film_from_elastic(
-                query=query, from_=from_, size=size,
+                search_query=search_query, paginate_from=paginate_from, paginate_size=search_size,
             )
             if films:
                 await self._put_films_to_cache(films, url)
@@ -98,33 +98,31 @@ class FilmService:
         return await self._prepare_person(person_id, docs)
 
     async def _search_film_from_elastic(
-            self, query: str, from_: int, size: int,
+            self, search_query: str, paginate_from: int, paginate_size: int,
     ) -> Optional[List[Film]]:
         """Функция для поиска фильма в elasticsearch."""
-        body = {
-            'query': {
-                'multi_match': {
-                    'query': f'{query}',
-                    'fuzziness': 'auto',
-                },
+        query = {
+            'multi_match': {
+                'query': f'{search_query}',
+                'fuzziness': 'auto',
             },
         }
-        docs = await self.search_engine_service.search(from_=from_, size=size, body=body)
+        docs = await self.search_engine_service.search(from_=paginate_from, size=paginate_size, query=query)
         if not docs:
             return docs
         return [Film(**hit['_source']) for hit in docs]
 
     async def _get_scope_films_from_elastic(
-            self, from_: int, size: int, filter_: dict, sort: str,
+            self, paginate_from: int, paginate_size: int, search_filter: dict, sort: str,
     ) -> Optional[List[Film]]:
         """Функция для поиска фильмов в elasticsearch в соот. фильтрам."""
-        if filter_:
+        if search_filter:
             filter_nested_values = FilterNestedValues.get_values()
             filter_simple_values = FilterSimpleValues.get_values()
-            body = []
-            for key in filter_:
+            query = []
+            for key in search_filter:
                 if key in filter_nested_values:
-                    body.append(
+                    query.append(
                         {
                             'nested': {
                                 'path': f'{key}',
@@ -133,7 +131,7 @@ class FilmService:
                                         'must': [
                                             {
                                                 'match': {
-                                                    f'{key}.id': f'{filter_[key]}',
+                                                    f'{key}.id': f'{search_filter[key]}',
                                                 },
                                             },
                                         ],
@@ -143,19 +141,19 @@ class FilmService:
                         },
                     )
                 elif key in filter_simple_values:
-                    body.append({'match': {f'{key}': f'{filter_[key]}'}})
+                    query.append({'match': {f'{key}': f'{search_filter[key]}'}})
 
             doc = await self.search_engine_service.search(
-                from_=from_,
-                size=size,
+                from_=paginate_from,
+                size=paginate_size,
                 sort=f'{sort[1:]}:desc' if sort[0] == '-'
                 else f'{sort}:asc',
-                body={'query': {'bool': {'must': body}}},
+                query={'bool': {'must': query}},
             )
         else:
             doc = await self.search_engine_service.search(
-                from_=from_,
-                size=size,
+                from_=paginate_from,
+                size=paginate_size,
                 sort=f'{sort[1:]}:desc' if sort[0] == '-'
                 else f'{sort}:asc',
             )
@@ -232,8 +230,7 @@ class FilmService:
     async def _get_by_person_ids_from_elastic(self, person_ids: List[str]) -> dict:
         """Возвращает результат запроса к elastic для поиска персон."""
         return await self.search_engine_service.search(
-            body={
-                'query': {
+            query={
                     'bool': {
                         'should': [
                             {
@@ -269,7 +266,6 @@ class FilmService:
                         ],
                     },
                 },
-            },
         )
 
     async def _films_from_cache(self, url: str):

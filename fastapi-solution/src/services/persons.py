@@ -47,12 +47,10 @@ class PersonService:
             doc = await self.search_engine_service.search(
                 from_=from_,
                 size=size,
-                body={
-                    'query': {
-                        'multi_match': {
-                            'query': f'{query}',
-                            'fuzziness': 'auto',
-                        },
+                query={
+                    'multi_match': {
+                        'query': f'{query}',
+                        'fuzziness': 'auto',
                     },
                 },
             )
@@ -101,17 +99,15 @@ class PersonService:
         """Возвращает персону из эластика."""
         person = None
         doc = await self.search_engine_service.search(
-            body={
-                'query': {
-                    'bool': {
-                        'must': [
-                            {
-                                'match_phrase': {
-                                    'id': person_id,
-                                },
+            query={
+                'bool': {
+                    'must': [
+                        {
+                            'match_phrase': {
+                                'id': person_id,
                             },
-                        ],
-                    },
+                        },
+                    ],
                 },
             },
         )

@@ -74,7 +74,7 @@ async def redis_pool() -> AsyncIterator[Redis]:
 @pytest_asyncio.fixture
 async def redis_flushall(redis_pool):
     """Фикстура, удаляющая кеш редиса."""
-    redis_pool.flushall()
+    await redis_pool.flushall()
 
 
 @pytest.fixture(scope="session")

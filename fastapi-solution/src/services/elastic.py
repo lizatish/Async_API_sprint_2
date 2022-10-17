@@ -14,7 +14,7 @@ class ElasticService:
     async def search(self,
                      from_: int = None,
                      size: int = conf.ELASTIC_DEFAULT_OUTPUT_RECORDS_SIZE,
-                     body: dict = None,
+                     query: dict = None,
                      sort: str = None,
                      ):
         try:
@@ -22,7 +22,7 @@ class ElasticService:
                 index=self.es_index,
                 from_=from_,
                 size=size,
-                body=body,
+                query=query,
                 sort=sort,
             )
         except NotFoundError:
