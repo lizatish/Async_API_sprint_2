@@ -49,7 +49,7 @@ class AsyncCacheStorage(ABC):
         pass
 
     @abstractmethod
-    async def lpush(self, key: str, element: str, **kwargs) -> int:
+    async def lpush(self, key: str, *elements: list[str], **kwargs) -> int:
         """Кладет элемент в список по ключу в начало очереди.
 
         Args:

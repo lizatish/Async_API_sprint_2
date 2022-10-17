@@ -8,6 +8,7 @@ from db.elastic import get_elastic_storage, AsyncSearchEngine
 from db.redis import get_redis_storage, AsyncCacheStorage
 from models.main import Genre
 from services.elastic import ElasticService
+from services.redis import RedisService
 
 conf = get_settings()
 
@@ -15,10 +16,10 @@ conf = get_settings()
 class GenreService:
     """Сервис для работы с жанрами."""
 
-    def __init__(self, cache: AsyncCacheStorage, search_engine_service: AsyncSearchEngine):
+    def __init__(self, cache_storage: AsyncCacheStorage, search_engine_storage: AsyncSearchEngine):
         """Инициализация сервиса."""
-        self.cache = cache
-        self.search_engine_service = ElasticService(search_engine_service, 'genres')
+        self.cache_service = RedisService(cache_storage)
+        self.search_engine_service = ElasticService(search_engine_storage, 'genres')
 
     async def get_genres_list(self, url: str) -> List[Genre]:
         """Возвращает список всех жанров."""
@@ -68,7 +69,7 @@ class GenreService:
         return genre
 
     async def _genre_from_cache(self, genre_id: str) -> Optional[Genre]:
-        data = await self.cache.get(genre_id)
+        data = await self.cache_service.get(genre_id)
         if not data:
             return None
 
@@ -76,11 +77,11 @@ class GenreService:
         return genre
 
     async def _put_genre_to_cache(self, genre: Genre):
-        await self.cache.set(genre.id, genre.json(), expire=conf.GENRE_CACHE_EXPIRE_IN_SECONDS)
+        await self.cache_service.set(genre.id, genre.json(), expire=conf.GENRE_CACHE_EXPIRE_IN_SECONDS)
 
     async def _genres_from_cache(self, url: str):
         """Функция отдаёт список жанров если они есть в кэше."""
-        data = await self.cache.lrange(url, 0, -1)
+        data = await self.cache_service.lrange(url, 0, -1)
         if not data:
             return None
         genres = [Genre.parse_raw(item) for item in data]
@@ -89,16 +90,16 @@ class GenreService:
     async def _put_genres_to_cache(self, genres: List[Genre], url: str):
         """Функция кладёт список жанров в кэш."""
         data = [item.json() for item in genres]
-        await self.cache.lpush(
+        await self.cache_service.lpush(
             url, *data,
         )
-        await self.cache.expire(url, conf.GENRE_CACHE_EXPIRE_IN_SECONDS)
+        await self.cache_service.expire(url, conf.GENRE_CACHE_EXPIRE_IN_SECONDS)
 
 
 @lru_cache()
 def get_genre_service(
         cache_storage: AsyncCacheStorage = Depends(get_redis_storage),
-        search_engine_service: AsyncSearchEngine = Depends(get_elastic_storage),
+        search_engine_storage: AsyncSearchEngine = Depends(get_elastic_storage),
 ) -> GenreService:
     """Возвращает экземпляр сервиса для работы с жанрами."""
-    return GenreService(cache_storage, search_engine_service)
+    return GenreService(cache_storage, search_engine_storage)

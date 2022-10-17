@@ -9,6 +9,7 @@ from db.redis import AsyncCacheStorage, get_redis_storage
 from models.common import FilterSimpleValues, FilterNestedValues
 from models.main import Film, Person, PersonFilm
 from services.elastic import ElasticService
+from services.redis import RedisService
 
 conf = get_settings()
 
@@ -16,10 +17,10 @@ conf = get_settings()
 class FilmService:
     """Сервис для работы с фильмами."""
 
-    def __init__(self, cache: AsyncCacheStorage, search_engine_service: AsyncSearchEngine):
+    def __init__(self, cache_storage: AsyncCacheStorage, search_engine_storage: AsyncSearchEngine):
         """Инициализация сервиса."""
-        self.cache = cache
-        self.search_engine_service = ElasticService(search_engine_service, 'movies')
+        self.cache_service = RedisService(cache_storage)
+        self.search_engine_service = ElasticService(search_engine_storage, 'movies')
         self.person_roles = ['writers', 'actors', 'directors']
 
     async def get_by_id(self, film_id: str) -> Optional[Film]:
@@ -169,20 +170,20 @@ class FilmService:
 
     async def _film_from_cache(self, film_id: str) -> Optional[Film]:
         """Функция отдаёт фильм по id если он есть в кэше."""
-        data = await self.cache.get(film_id)
+        data = await self.cache_service.get(film_id)
         if not data:
             return None
         return Film.parse_raw(data)
 
     async def _put_film_to_cache(self, film: Film):
         """Функция кладёт фильм по id в кэш."""
-        await self.cache.set(
+        await self.cache_service.set(
             film.id, film.json(), expire=conf.FILM_CACHE_EXPIRE_IN_SECONDS,
         )
 
     async def _person_from_cache(self, person_id: str) -> Optional[Person]:
         """Возвращает персону ид кеша редиса."""
-        data = await self.cache.get(person_id)
+        data = await self.cache_service.get(person_id)
         if not data:
             return None
         person = Person.parse_raw(data)
@@ -273,7 +274,7 @@ class FilmService:
 
     async def _films_from_cache(self, url: str):
         """Функция отдаёт список фильмов если они есть в кэше."""
-        data = await self.cache.lrange(url, 0, -1)
+        data = await self.cache_service.lrange(url, 0, -1)
         if not data:
             return None
         films = [Film.parse_raw(item) for item in data]
@@ -282,14 +283,14 @@ class FilmService:
     async def _put_films_to_cache(self, films: List[Film], url: str):
         """Функция кладёт список фильмов в кэш."""
         data = [item.json() for item in films]
-        await self.cache.lpush(
+        await self.cache_service.lpush(
             url, *data,
         )
-        await self.cache.expire(url, conf.FILM_CACHE_EXPIRE_IN_SECONDS)
+        await self.cache_service.expire(url, conf.FILM_CACHE_EXPIRE_IN_SECONDS)
 
     async def _persons_from_cache(self, url: str):
         """Функция отдаёт список персон если они есть в кэше."""
-        data = await self.cache.lrange(url, 0, -1)
+        data = await self.cache_service.lrange(url, 0, -1)
         if not data:
             return None
         persons = [Person.parse_raw(item) for item in data]
@@ -298,18 +299,18 @@ class FilmService:
     async def _put_persons_to_cache(self, persons: List[Person], url: str):
         """Функция кладёт список персон в кэш."""
         data = [item.json() for item in persons]
-        await self.cache.lpush(url, *data)
-        await self.cache.expire(url, conf.PERSON_CACHE_EXPIRE_IN_SECONDS)
+        await self.cache_service.lpush(url, *data)
+        await self.cache_service.expire(url, conf.PERSON_CACHE_EXPIRE_IN_SECONDS)
 
     async def _put_person_to_cache(self, person: Person):
         """Получает персону из кеша редиса."""
-        await self.cache.set(f'info_{person.id}', person.json(), expire=conf.PERSON_CACHE_EXPIRE_IN_SECONDS)
+        await self.cache_service.set(f'info_{person.id}', person.json(), expire=conf.PERSON_CACHE_EXPIRE_IN_SECONDS)
 
 
 @lru_cache()
 def get_film_service(
         cache_storage: AsyncCacheStorage = Depends(get_redis_storage),
-        search_engine_service: AsyncSearchEngine = Depends(get_elastic_storage),
+        search_engine_storage: AsyncSearchEngine = Depends(get_elastic_storage),
 ) -> FilmService:
     """Возвращает экземпляр сервиса для работы с кинопроизведениями."""
-    return FilmService(cache_storage, search_engine_service)
+    return FilmService(cache_storage, search_engine_storage)

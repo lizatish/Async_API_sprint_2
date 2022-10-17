@@ -8,6 +8,7 @@ from db.elastic import get_elastic_storage, AsyncSearchEngine
 from db.redis import get_redis_storage, AsyncCacheStorage
 from models.main import Person
 from services.elastic import ElasticService
+from services.redis import RedisService
 
 conf = get_settings()
 
@@ -17,7 +18,7 @@ class PersonService:
 
     def __init__(self, cache_storage: AsyncCacheStorage, search_engine_storage: AsyncSearchEngine):
         """Инициализация сервиса."""
-        self.cache = cache_storage
+        self.cache_service = RedisService(cache_storage)
         self.search_engine_service = ElasticService(search_engine_storage, 'persons')
 
     async def get_by_id(self, person_id: str) -> Optional[Person]:
@@ -74,7 +75,7 @@ class PersonService:
 
     async def _enriched_person_from_cache(self, person_id: str) -> Optional[Person]:
         """Получает персону из кеша редиса."""
-        data = await self.cache.get(f'enriched_{person_id}')
+        data = await self.cache_service.get(f'enriched_{person_id}')
         if not data:
             return None
         person = Person.parse_raw(data)
@@ -82,11 +83,11 @@ class PersonService:
 
     async def _put_enriched_person_to_cache(self, person: Person):
         """Кладет персону в кеш редиса."""
-        await self.cache.set(f'enriched_{person.id}', person.json(), expire=conf.PERSON_CACHE_EXPIRE_IN_SECONDS)
+        await self.cache_service.set(f'enriched_{person.id}', person.json(), expire=conf.PERSON_CACHE_EXPIRE_IN_SECONDS)
 
     async def _person_from_cache(self, person_id: str) -> Optional[Person]:
         """Кладет персону в кеш редиса."""
-        data = await self.cache.get(person_id)
+        data = await self.cache_service.get(person_id)
         if not data:
             return None
         person = Person.parse_raw(data)
@@ -94,7 +95,7 @@ class PersonService:
 
     async def _put_person_to_cache(self, person_id: str, person: Person):
         """Получает персону из кеша редиса."""
-        await self.cache.set(person_id, person.json(), expire=conf.PERSON_CACHE_EXPIRE_IN_SECONDS)
+        await self.cache_service.set(person_id, person.json(), expire=conf.PERSON_CACHE_EXPIRE_IN_SECONDS)
 
     async def _get_person_from_elastic(self, person_id: str) -> Optional[Person]:
         """Возвращает персону из эластика."""
@@ -136,7 +137,7 @@ class PersonService:
 
     async def _persons_from_cache(self, url: str) -> Optional[list]:
         """Функция отдаёт список персон если они есть в кэше."""
-        data = await self.cache.lrange(url, 0, -1)
+        data = await self.cache_service.lrange(url, 0, -1)
         if not data:
             return None
         persons = [Person.parse_raw(item) for item in data]
@@ -145,10 +146,8 @@ class PersonService:
     async def _put_persons_to_cache(self, persons: List[Person], url: str):
         """Функция кладёт список персон в кэш."""
         data = [item.json() for item in persons]
-        await self.cache.lpush(
-            url, *data,
-        )
-        await self.cache.expire(url, conf.PERSON_CACHE_EXPIRE_IN_SECONDS)
+        await self.cache_service.lpush(url, *data)
+        await self.cache_service.expire(url, conf.PERSON_CACHE_EXPIRE_IN_SECONDS)
 
 
 @lru_cache()
