@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic.dataclasses import dataclass
 
-from common.models.main import FilmWorkId, PersonId, GenreId
+from etl.common.models.general import FilmWorkId, PersonId, GenreId
 
 
 @dataclass(frozen=True)

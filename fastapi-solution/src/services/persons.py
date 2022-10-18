@@ -6,7 +6,7 @@ from fastapi import Depends
 from core.config import get_settings
 from db.elastic import get_elastic_storage, AsyncSearchEngine
 from db.redis import get_redis_storage, AsyncCacheStorage
-from models.main import Person
+from models.general import Person
 from services.search_engine import SearchEngineService
 from services.cache import CacheService
 

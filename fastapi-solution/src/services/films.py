@@ -7,9 +7,9 @@ from core.config import get_settings
 from db.elastic import AsyncSearchEngine, get_elastic_storage
 from db.redis import AsyncCacheStorage, get_redis_storage
 from models.common import FilterSimpleValues, FilterNestedValues
-from models.main import Film, Person, PersonFilm
 from services.cache import CacheService
 from services.search_engine import SearchEngineService
+from models.general import Film, Person, PersonFilm
 
 conf = get_settings()
 

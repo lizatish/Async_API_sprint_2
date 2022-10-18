@@ -1,6 +1,6 @@
 from typing import Iterator
 
-from common.models.main import Genre
+from etl.common.models.general import Genre
 
 
 class Transform:
