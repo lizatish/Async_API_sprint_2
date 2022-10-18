@@ -1,17 +1,11 @@
 import os
 from functools import lru_cache
-from logging import config as logging_config
 
 from pydantic import BaseSettings
-
-from core.logger import LOGGING
 
 
 class Settings(BaseSettings):
     """Настройки приложения."""
-
-    # Применяем настройки логирования
-    logging_config.dictConfig(LOGGING)
 
     # Название проекта. Используется в Swagger-документации
     PROJECT_NAME: str = 'movies'
