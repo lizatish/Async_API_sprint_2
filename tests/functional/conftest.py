@@ -12,7 +12,7 @@ from httpx import AsyncClient
 
 from db import elastic
 from db import redis
-from db.storage import AsyncSearchEngine
+from db.elastic import AsyncSearchEngine
 from main import app
 from tests.functional.config import get_settings
 from tests.functional.testdata.films import es_film_works_data
@@ -74,7 +74,7 @@ async def redis_pool() -> AsyncIterator[Redis]:
 @pytest_asyncio.fixture
 async def redis_flushall(redis_pool):
     """Фикстура, удаляющая кеш редиса."""
-    redis_pool.flushall()
+    await redis_pool.flushall()
 
 
 @pytest.fixture(scope="session")

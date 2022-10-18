@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod, ABC
 
 
 class AsyncCacheStorage(ABC):
@@ -48,12 +48,12 @@ class AsyncCacheStorage(ABC):
         pass
 
     @abstractmethod
-    async def lpush(self, key: str, element: str, **kwargs) -> int:
+    async def lpush(self, key: str, *elements: list[str], **kwargs) -> int:
         """Кладет элемент в список по ключу в начало очереди.
 
         Args:
             key: ключ
-            element: значение элемента
+            elements: значение элемента
             kwargs: доп. параметры
 
         Returns:
@@ -73,35 +73,4 @@ class AsyncCacheStorage(ABC):
          Returns:
             bool: результат выполнения операции
         """
-        pass
-
-
-class AsyncSearchEngine(ABC):
-    """Абстрактный класс, реализующий работу поискового движка."""
-
-    @abstractmethod
-    def __init__(self, **kwargs):
-        """Инициализирует поисковой движок."""
-        pass
-
-    @abstractmethod
-    async def close(self, **kwargs):
-        """Закрывает соединение с движком.."""
-        pass
-
-    @abstractmethod
-    async def search(
-            self,
-            index: str,
-            from_: int = None,
-            size: int = None,
-            body: dict = None,
-            **kwargs,
-    ):
-        """Производит поиск документов."""
-        pass
-
-    @abstractmethod
-    async def get(self, index: str, id: str, **kwargs) -> dict:
-        """Возвращает документ заданного индекса по идентификатору."""
         pass

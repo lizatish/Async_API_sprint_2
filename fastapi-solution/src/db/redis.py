@@ -1,11 +1,10 @@
 from typing import Optional
 
-from aioredis import Redis
+from db.cache import AsyncCacheStorage
 
-cache: Optional[Redis] = None
+cache: Optional[AsyncCacheStorage] = None
 
 
-# Функция понадобится при внедрении зависимостей
-async def get_redis() -> Redis:
+async def get_redis_storage() -> AsyncCacheStorage:
     """Возвращает экземпляр redis."""
     return cache
