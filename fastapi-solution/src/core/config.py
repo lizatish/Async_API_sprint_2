@@ -1,10 +1,7 @@
 import os
 from functools import lru_cache
-from logging import config as logging_config
 
 from pydantic import BaseSettings
-
-from core.logger import LOGGING
 
 
 class Settings(BaseSettings):
