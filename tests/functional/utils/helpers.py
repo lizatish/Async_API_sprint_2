@@ -1,5 +1,4 @@
 import json
-from typing import BinaryIO
 from typing import List, Generator
 
 
@@ -14,23 +13,14 @@ def get_es_fw_bulk_query(es_data: List, es_index: str, es_id_field: str) -> Gene
         }
 
 
-def prepare_cache_output(redis_data_binary: BinaryIO) -> list[dict]:
-    """Подготавливает результирующие данные, считанные из кеша."""
-    redis_data = [json.loads(elem.decode()) for elem in redis_data_binary]
-    return sorted(redis_data, key=lambda d: d['id'])
-
-
-def prepare_expected_output(expected_answer: list[dict]) -> list[dict]:
-    """Подготавливает результирующие эталонные данные для финальной проверки."""
-    return sorted(expected_answer, key=lambda d: d['uuid'])
-
-
-def compare_films_by_person_answer(prepared_cache_data: list[dict], sorted_expected_answer: list[dict]):
-    """Сравнивает полученные и ожидаемые данные по фильмам, полученные из индекса персон."""
-    for r_data, e_data in zip(prepared_cache_data, sorted_expected_answer):
-        assert r_data['id'] == e_data['uuid']
-        assert r_data['full_name'] == e_data['full_name']
-        assert r_data['films'] == e_data['films']
+def prepare_redis_person(person: bytes) -> dict:
+    """Преобразует персону из редиса к необходимому виду."""
+    person = json.loads(person.decode())
+    return {
+        'uuid': person['id'],
+        'full_name': person['full_name'],
+        'films': person['films'],
+    }
 
 
 def prepare_redis_film(film: bytes) -> dict:
@@ -49,3 +39,29 @@ def prepare_redis_genre(genre: bytes) -> dict:
     genre.pop('description', None)
     genre['uuid'] = genre.pop('id')
     return genre
+
+
+def check_nested_filteres(redis_data: list, filter_name: dict) -> bool:
+    """Проверка на наличие фильтров в ответе."""
+    for item in redis_data:
+        for filter_ in filter_name:
+            data = json.loads(item.decode('utf-8'))
+            tmp = [i['id'] for i in data[filter_]]
+            if filter_name[filter_] in tmp:
+                continue
+            else:
+                return False
+    return True
+
+
+def check_simple_filteres(redis_data: list, filter_name: dict) -> bool:
+    """Проверка на наличие фильтров в ответе."""
+    if filter_name:
+        for item in redis_data:
+            for filter_ in filter_name:
+                data = json.loads(item.decode('utf-8'))
+                if str(filter_name[filter_]) in str(data[filter_]) or filter_name[filter_] == data[filter_]:
+                    continue
+                else:
+                    return False
+    return True

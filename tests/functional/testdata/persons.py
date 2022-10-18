@@ -1,3 +1,6 @@
+from http import HTTPStatus
+
+
 es_persons_data = [
     {
         'id': 'ff2b4d5a-d920-4728-ab21-6f7b3c003e51',
@@ -25,7 +28,7 @@ es_persons_data = [
     },
 ]
 
-test_data_get_film_by_id = [
+test_data_get_film_by_id_successful = [
     ('d1507689-c396-4603-89ed-825022d64296',
      {
          'uuid': 'd1507689-c396-4603-89ed-825022d64296',
@@ -39,8 +42,7 @@ test_data_get_film_by_id = [
              },
          ],
      },
-     200,
-     True,
+     HTTPStatus.OK,
      ),
     (
         '998acbe6-dd4b-4f93-9996-0efac51d5b95',
@@ -62,33 +64,37 @@ test_data_get_film_by_id = [
                 },
             ],
         },
-        200,
-        True,
+        HTTPStatus.OK
     ),
-    ('not_found_id',
-     {'detail': 'Person not found'},
-     404,
-     False,
-     ),
 ]
 
-test_data_get_films_by_person = [
-    ('998acbe6-dd4b-4f93-9996-0efac51d5b95',
-     [
-         {
-             'uuid': 'db594b91-a587-48c4-bac9-5c6be5e4cf33',
-             'title': 'Star Trek: Starfleet Academy',
-             'imdb_rating': 8.1,
-         },
-         {
-             'uuid': 'b1a2aae8-5c9e-4583-b89e-883c0d0c969a',
-             'title': 'Star Trek: Elite Force II',
-             'imdb_rating': 8.5,
-         },
-     ],
-     200,
-     True,
-     ),
+
+test_data_get_film_by_id_unsuccessful = [
+    (
+        'not_found_id',
+        {'detail': 'Person not found'},
+        HTTPStatus.NOT_FOUND,
+    ),
+]
+
+
+test_data_get_films_by_person_successful = [
+    (
+        '998acbe6-dd4b-4f93-9996-0efac51d5b95',
+        [
+            {
+                'uuid': 'db594b91-a587-48c4-bac9-5c6be5e4cf33',
+                'title': 'Star Trek: Starfleet Academy',
+                'imdb_rating': 8.1,
+            },
+            {
+                'uuid': 'b1a2aae8-5c9e-4583-b89e-883c0d0c969a',
+                'title': 'Star Trek: Elite Force II',
+                'imdb_rating': 8.5,
+            },
+        ],
+        HTTPStatus.OK
+    ),
     (
         'd1507689-c396-4603-89ed-825022d64296',
         [
@@ -98,17 +104,20 @@ test_data_get_films_by_person = [
                 'imdb_rating': 8.5,
             },
         ],
-        200,
-        True,
-    ),
+        HTTPStatus.OK
+    )
+]
+
+
+test_data_get_films_by_person_unsuccessful = [
     (
         'not_found_person',
-
         {'detail': 'Person not found'},
-        404,
-        False,
+        HTTPStatus.NOT_FOUND
     ),
 ]
+
+
 test_data_search_persons = [
     (
         '',
@@ -192,7 +201,6 @@ test_data_search_persons = [
                 ],
             },
         ],
-        True,
     ),
     (
         '?query=patric',
@@ -222,7 +230,6 @@ test_data_search_persons = [
                 ],
             },
         ],
-        True,
     ),
 ]
 
@@ -243,7 +250,6 @@ test_data_for_persons_pagination = [
                 ],
             },
         ],
-        True,
     ),
     (
         '?size=1&number=3',
@@ -267,7 +273,6 @@ test_data_for_persons_pagination = [
                 ],
             },
         ],
-        True,
     ),
     (
         '?size=2&number=2',
@@ -303,7 +308,6 @@ test_data_for_persons_pagination = [
                 ],
             },
         ],
-        True,
     ),
     (
         '?size=2&number=1',
@@ -333,7 +337,6 @@ test_data_for_persons_pagination = [
                 ],
             },
         ],
-        True,
     ),
     (
         '?size=1&number=-100',
@@ -351,6 +354,5 @@ test_data_for_persons_pagination = [
                 ],
             },
         ],
-        True,
     ),
 ]
