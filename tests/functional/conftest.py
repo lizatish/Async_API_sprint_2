@@ -3,9 +3,10 @@ import json
 from asyncio import AbstractEventLoop
 from typing import List, AsyncIterator, Callable
 
+import aioredis
 import pytest
 import pytest_asyncio
-from aioredis import create_redis_pool, Redis
+from aioredis import Redis
 from elasticsearch import AsyncElasticsearch
 from elasticsearch.helpers import async_bulk
 from httpx import AsyncClient
@@ -65,10 +66,11 @@ async def es_client() -> AsyncSearchEngine:
 @pytest_asyncio.fixture(scope="session")
 async def redis_pool() -> AsyncIterator[Redis]:
     """Фикстура соединения с redis."""
-    pool = await create_redis_pool((conf.CACHE_HOST, conf.CACHE_PORT), minsize=10, maxsize=20)
+    pool = aioredis.from_url(
+        f"redis://{conf.CACHE_HOST}:{conf.CACHE_PORT}", encoding="utf-8", decode_responses=True
+    )
     yield pool
-    pool.close()
-    await pool.wait_closed()
+    await pool.close()
 
 
 @pytest_asyncio.fixture
@@ -98,7 +100,8 @@ def api_client(event_loop: AbstractEventLoop, es_client: AsyncElasticsearch, red
 @pytest_asyncio.fixture(scope="session")
 async def film_works_api_client(api_client: AsyncClient, es_write_data: Callable) -> AsyncClient:
     """Фикстура апи-клиента с заполненными данными es для тестирования фильмов."""
-    await es_write_data(es_film_works_data, conf.SEARCH_ENGINE_FILM_WORKS_INDEX, conf.SEARCH_ENGINE_FILM_WORKS_INDEX_FILE)
+    await es_write_data(es_film_works_data, conf.SEARCH_ENGINE_FILM_WORKS_INDEX,
+                        conf.SEARCH_ENGINE_FILM_WORKS_INDEX_FILE)
     yield api_client
 
 

@@ -14,11 +14,11 @@ class CacheService:
 
     async def set(self, key: str, value: str, expire: int) -> str:
         """Записывает ключ для хранения значения."""
-        return await self.db.set(key, value, expire=expire)
+        return await self.db.set(key, value, expire)
 
     async def lrange(self, key: str, start: int, stop: int) -> list:
         """Возвращает диапазон значений, лежащих по ключу."""
-        return await self.db.lrange(key, start=start, stop=stop)
+        return await self.db.lrange(key, start, stop)
 
     async def lpush(self, key: str, *elements: list[str]) -> int:
         """Кладет элемент в список по ключу в начало очереди."""

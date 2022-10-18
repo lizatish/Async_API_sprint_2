@@ -25,7 +25,7 @@ def prepare_redis_person(person: bytes) -> dict:
 
 def prepare_redis_film(film: bytes) -> dict:
     """Преобразует фильм из редиса к необходимому виду."""
-    film = json.loads(film.decode())
+    film = json.loads(film)
     return {
         'uuid': film['id'],
         'title': film['title'],
@@ -35,7 +35,7 @@ def prepare_redis_film(film: bytes) -> dict:
 
 def prepare_redis_genre(genre: bytes) -> dict:
     """Преобразует жанр из редиса к необходимому виду."""
-    genre = json.loads(genre.decode())
+    genre = json.loads(genre)
     genre.pop('description', None)
     genre['uuid'] = genre.pop('id')
     return genre

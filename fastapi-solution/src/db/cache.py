@@ -74,3 +74,8 @@ class AsyncCacheStorage(ABC):
             bool: результат выполнения операции
         """
         pass
+
+    @abstractmethod
+    async def close(self):
+        """Закрывает соединение."""
+        pass
