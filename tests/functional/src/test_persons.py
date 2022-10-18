@@ -92,6 +92,7 @@ async def test_get_films_by_person_unsuccessful(persons_api_client: AsyncClient,
 async def test_search_persons(persons_api_client: AsyncClient, redis_pool: Redis, redis_flushall, query: str,
                               expected_answer: list[dict]):
     url = f'/api/v1/persons/search{query}'
+
     response = await persons_api_client.get(url)
     body = response.json()
     cache_data_binary = await redis_pool.lrange(f"enriched_{conf.BASE_URL}{url}", 0, -1)
@@ -113,6 +114,7 @@ async def test_pagination_persons(
         expected_answer: list[dict]
 ):
     url = f'/api/v1/persons/search{query}'
+
     response = await persons_api_client.get(url)
     body = response.json()
     cache_data_binary = await redis_pool.lrange(f"enriched_{conf.BASE_URL}{url}", 0, -1)
