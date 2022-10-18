@@ -10,9 +10,6 @@ from core.logger import LOGGING
 class Settings(BaseSettings):
     """Настройки приложения."""
 
-    # Применяем настройки логирования
-    logging_config.dictConfig(LOGGING)
-
     # Название проекта. Используется в Swagger-документации
     PROJECT_NAME: str = 'movies'
 
