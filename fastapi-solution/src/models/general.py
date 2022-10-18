@@ -1,4 +1,4 @@
-from typing import List, Optional, Literal, Set
+from typing import Optional, Literal
 
 from pydantic import BaseModel, Field
 
@@ -9,14 +9,14 @@ class PersonFilm(BaseModel):
     """Модель представления вложенного фильма внутри персоны."""
 
     role: Literal['actor', 'writer', 'director']
-    film_ids: Set[str]
+    film_ids: set[str]
 
 
 class Person(UUIDMixin):
     """Модель персонажа."""
 
     full_name: str = Field(..., alias='name')
-    films: List[Optional[PersonFilm]] = []
+    films: list[Optional[PersonFilm]] = []
 
 
 class Genre(UUIDMixin):
@@ -32,8 +32,8 @@ class Film(UUIDMixin):
     title: str
     imdb_rating: float
     description: Optional[str]
-    genres: List[Genre] = []
-    actors: List[Person] = []
-    writers: List[Person] = []
-    directors: List[Person] = []
+    genres: list[Genre] = []
+    actors: list[Person] = []
+    writers: list[Person] = []
+    directors: list[Person] = []
     age_limit: int = 0

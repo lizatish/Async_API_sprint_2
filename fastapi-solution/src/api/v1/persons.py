@@ -1,5 +1,3 @@
-from typing import List
-
 from fastapi import APIRouter, Depends, Request
 
 from api.v1.errors import PersonNotFound
@@ -13,13 +11,13 @@ router = APIRouter()
 
 @router.get(
     '/{person_id}/film',
-    response_model=List[FilmByPerson],
+    response_model=list[FilmByPerson],
     summary='Найти фильмы по идентификатору участника',
 )
 async def films_by_person(
         person_id: str,
         film_service: FilmService = Depends(get_film_service),
-) -> List[FilmByPerson]:
+) -> list[FilmByPerson]:
     """
     Возвращает список фильмов, где участвовал персонаж со следующим содержимым:
 
@@ -40,14 +38,14 @@ async def films_by_person(
     ]
 
 
-@router.get('/search', response_model=List[Person], summary='Найти участников фильма')
+@router.get('/search', response_model=list[Person], summary='Найти участников фильма')
 async def search_persons(
         request: Request,
         query: str = None,
         paginator: Paginator = Depends(),
         person_service: PersonService = Depends(get_person_service),
         film_service: FilmService = Depends(get_film_service),
-) -> List[Person]:
+) -> list[Person]:
     """
     Возвращает список всех персон, удовлетворяющих условиям поиска со следующим содержимым:
 

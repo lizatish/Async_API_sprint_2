@@ -1,7 +1,7 @@
 """Описание базового класса ETL-пайплайна по вычитыванию данных из postgres."""
 
 from datetime import datetime
-from typing import Iterator, Optional, List
+from typing import Iterator, Optional
 
 import psycopg2
 from psycopg2.extensions import connection as pg_connection
@@ -50,7 +50,7 @@ class BaseExtractor:
     def set_values_sql_format(
             self,
             cursor: psycopg2.extensions.cursor,
-            list_values: List[str],
+            list_values: list[str],
     ) -> str:
         """Форматирует кортежи данных для возможности записывать данные пачкой.
 
@@ -83,7 +83,7 @@ class BaseProducer(BaseExtractor):
             self,
             batch_size: int,
             start_from: Optional[datetime],
-    ) -> Iterator[List[dataclass]]:
+    ) -> Iterator[list[dataclass]]:
         """Производит загрузку данных.
 
         Args:

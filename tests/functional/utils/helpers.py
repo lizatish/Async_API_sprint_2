@@ -1,8 +1,8 @@
 import json
-from typing import List, Generator
+from typing import Generator
 
 
-def get_es_fw_bulk_query(es_data: List, es_index: str, es_id_field: str) -> Generator:
+def get_es_fw_bulk_query(es_data: list, es_index: str, es_id_field: str) -> Generator:
     """Генерирует документы для единовременной записи в es."""
     for doc in es_data:
         yield {

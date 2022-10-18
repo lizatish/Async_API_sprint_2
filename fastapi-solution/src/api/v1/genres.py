@@ -1,5 +1,3 @@
-from typing import List
-
 from fastapi import APIRouter, Depends, Request
 
 from api.v1.errors import GenreNotFound
@@ -27,11 +25,11 @@ async def genre_details(
     return Genre(uuid=genre.id, name=genre.name)
 
 
-@router.get('/', response_model=List[Genre], summary='Get list of all genres')
+@router.get('/', response_model=list[Genre], summary='Get list of all genres')
 async def genres_list(
         request: Request,
         genre_service: GenreService = Depends(get_genre_service),
-) -> List[Genre]:
+) -> list[Genre]:
     """
     Возвращает список жанров со следующей информацией:
 

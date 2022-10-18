@@ -1,5 +1,5 @@
 from functools import lru_cache
-from typing import Optional, List
+from typing import Optional
 
 from fastapi import Depends
 
@@ -23,7 +23,7 @@ class GenreService:
         self.cache_service = CacheService(cache_storage)
         self.search_engine_service = SearchEngineService(search_engine_storage, 'genres')
 
-    async def get_genres_list(self, url: str) -> List[Genre]:
+    async def get_genres_list(self, url: str) -> list[Genre]:
         """Возвращает список всех жанров."""
         genres = await self._genres_from_cache(url)
         if not genres:
@@ -82,7 +82,7 @@ class GenreService:
         genres = [Genre.parse_raw(item) for item in data]
         return reversed(genres)
 
-    async def _put_genres_to_cache(self, genres: List[Genre], url: str):
+    async def _put_genres_to_cache(self, genres: list[Genre], url: str):
         """Функция кладёт список жанров в кэш."""
         data = [item.json() for item in genres]
         await self.cache_service.lpush(
