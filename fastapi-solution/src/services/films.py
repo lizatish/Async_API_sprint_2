@@ -4,8 +4,10 @@ from typing import Optional, List
 from fastapi import Depends
 
 from core.config import get_settings
-from db.elastic import AsyncSearchEngine, get_elastic_storage
-from db.redis import AsyncCacheStorage, get_redis_storage
+from db.elastic import get_elastic_storage
+from db.redis import get_redis_storage
+from db.cache import AsyncCacheStorage
+from db.search_engine import AsyncSearchEngine
 from models.common import FilterSimpleValues, FilterNestedValues
 from services.cache import CacheService
 from services.search_engine import SearchEngineService

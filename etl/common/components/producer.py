@@ -1,7 +1,7 @@
 from psycopg2.extensions import connection as pg_connection
 
 from common.components.base import BaseProducer
-from etl.common.models.general import Person, FilmWork, Genre
+from common.models.general import Person, FilmWork, Genre
 
 
 class PersonProducer(BaseProducer):
