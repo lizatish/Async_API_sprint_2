@@ -2,7 +2,6 @@ import logging
 
 import aioredis
 import uvicorn as uvicorn
-from aioredis import Redis
 from elasticsearch import AsyncElasticsearch
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse

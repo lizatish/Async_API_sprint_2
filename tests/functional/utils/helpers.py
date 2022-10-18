@@ -15,7 +15,7 @@ def get_es_fw_bulk_query(es_data: List, es_index: str, es_id_field: str) -> Gene
 
 def prepare_redis_person(person: bytes) -> dict:
     """Преобразует персону из редиса к необходимому виду."""
-    person = json.loads(person.decode())
+    person = json.loads(person)
     return {
         'uuid': person['id'],
         'full_name': person['full_name'],
@@ -45,7 +45,7 @@ def check_nested_filteres(redis_data: list, filter_name: dict) -> bool:
     """Проверка на наличие фильтров в ответе."""
     for item in redis_data:
         for filter_ in filter_name:
-            data = json.loads(item.decode('utf-8'))
+            data = json.loads(item)
             tmp = [i['id'] for i in data[filter_]]
             if filter_name[filter_] in tmp:
                 continue
@@ -59,7 +59,7 @@ def check_simple_filteres(redis_data: list, filter_name: dict) -> bool:
     if filter_name:
         for item in redis_data:
             for filter_ in filter_name:
-                data = json.loads(item.decode('utf-8'))
+                data = json.loads(item)
                 if str(filter_name[filter_]) in str(data[filter_]) or filter_name[filter_] == data[filter_]:
                     continue
                 else:

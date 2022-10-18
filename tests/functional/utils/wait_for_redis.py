@@ -2,7 +2,6 @@ import asyncio
 import logging
 
 import aioredis
-from aioredis import Redis
 
 from tests.functional.config import get_settings
 from tests.functional.logger import get_logger
