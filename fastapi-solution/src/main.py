@@ -25,15 +25,16 @@ app = FastAPI(
 @app.on_event('startup')
 async def startup():
     """Метод, выполняющий инициализацию компонентов приложения при старте."""
-    redis.cache = await aioredis.create_redis_pool((conf.CACHE_HOST, conf.CACHE_PORT), minsize=10, maxsize=20)
+    redis.cache = aioredis.from_url(
+        f"redis://{conf.CACHE_HOST}:{conf.CACHE_PORT}", encoding="utf-8", decode_responses=True
+    )
     elastic.es = AsyncElasticsearch(hosts=[f'http://{conf.ELASTIC_HOST}:{conf.ELASTIC_PORT}'])
 
 
 @app.on_event('shutdown')
 async def shutdown():
     """Метод, выполняющий утилизацию компонентов приложения после завершения работы  приложения."""
-    redis.cache.close()
-    await redis.cache.wait_closed()
+    await redis.cache.close()
     await elastic.es.close()
 
 

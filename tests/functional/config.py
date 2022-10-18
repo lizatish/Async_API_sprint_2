@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     LOG_LEVEL: int = logging.DEBUG
 
     # Настройки Redis
-    CACHE_HOST: str = 'test-redis'
+    CACHE_HOST: str = 'localhost'
     CACHE_PORT: int = 6379
 
     # Корень проекта
@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     BASE_URL: str = 'http://test-api_service'
 
     # Настройки поискового движка
-    SEARCH_ENGINE_HOST: str = 'test-elastic'
+    SEARCH_ENGINE_HOST: str = 'localhost'
     SEARCH_ENGINE_PORT: int = 9200
     SEARCH_ENGINE_FILM_WORKS_INDEX: str = 'movies'
     SEARCH_ENGINE_PERSONS_INDEX: str = 'persons'
