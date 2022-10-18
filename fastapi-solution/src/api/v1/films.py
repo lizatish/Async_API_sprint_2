@@ -1,4 +1,4 @@
-from typing import List, Literal
+from typing import Literal
 
 from fastapi import APIRouter, Depends, Request
 
@@ -12,7 +12,7 @@ router = APIRouter()
 
 @router.get(
     '/',
-    response_model=List[ShortFilm],
+    response_model=list[ShortFilm],
     summary='Найти фильмы в порядке убывания/возрастания рейтинга,'
             ' удовлетворяющих фильтру',
 )
@@ -22,7 +22,7 @@ async def films_scope(
         film_service: FilmService = Depends(get_film_service),
         filter: dict = Depends(get_filter),
         sort: Literal['imdb_rating', '-imdb_rating'] = '-imdb_rating',
-) -> List[ShortFilm]:
+) -> list[ShortFilm]:
     """
     Возвращает отсортированный и отфильтрованный список фильмов со следующим содержимым:
 
@@ -43,13 +43,13 @@ async def films_scope(
     ) for item in films]
 
 
-@router.get('/search', response_model=List[ShortFilm], summary='Найти список фильмов по совпадению')
+@router.get('/search', response_model=list[ShortFilm], summary='Найти список фильмов по совпадению')
 async def film_search(
         request: Request,
         query: str,
         film_service: FilmService = Depends(get_film_service),
         paginator: Paginator = Depends(),
-) -> List[ShortFilm]:
+) -> list[ShortFilm]:
     """
     Возвращает список фильмов, удовлетворяющих поиску со следующим содержимым:
 

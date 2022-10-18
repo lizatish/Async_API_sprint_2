@@ -1,5 +1,5 @@
 from functools import lru_cache
-from typing import Optional, List
+from typing import Optional
 
 from fastapi import Depends
 
@@ -37,7 +37,7 @@ class FilmService:
 
     async def get_scope_films(
             self, paginate_from: int, paginate_size: int, search_filter: dict, sort: str, url: str,
-    ) -> Optional[List[Film]]:
+    ) -> Optional[list[Film]]:
         """Функция для получения списка фильмов."""
         films = await self._films_from_cache(url)
         if not films:
@@ -50,7 +50,7 @@ class FilmService:
 
     async def search_film(
             self, search_query: str, paginate_from: int, search_size: int, url: str,
-    ) -> Optional[List[Film]]:
+    ) -> Optional[list[Film]]:
         """Функция для поиска фильма."""
         films = await self._films_from_cache(url)
         if not films:
@@ -61,7 +61,7 @@ class FilmService:
                 await self._put_films_to_cache(films, url)
         return films
 
-    async def get_films_by_person(self, person_id: str) -> List[Optional[Film]]:
+    async def get_films_by_person(self, person_id: str) -> list[Optional[Film]]:
         """Возвращает фильмы, в которых участвовала персона."""
         films = await self._films_from_cache(f'film_by_person_{person_id}')
         if not films:
@@ -82,7 +82,7 @@ class FilmService:
             await self._put_person_to_cache(person)
         return person
 
-    async def get_person_by_ids(self, person_ids: List[str]) -> List[Person]:
+    async def get_person_by_ids(self, person_ids: list[str]) -> list[Person]:
         """Возвращает набор персон по списку идентификаторов."""
         persons = await self._persons_from_cache('-'.join(person_ids))
         if not persons:
@@ -101,7 +101,7 @@ class FilmService:
 
     async def _search_film_from_elastic(
             self, search_query: str, paginate_from: int, paginate_size: int,
-    ) -> Optional[List[Film]]:
+    ) -> Optional[list[Film]]:
         """Функция для поиска фильма в elasticsearch."""
         query = {
             'multi_match': {
@@ -116,7 +116,7 @@ class FilmService:
 
     async def _get_scope_films_from_elastic(
             self, paginate_from: int, paginate_size: int, search_filter: dict, sort: str,
-    ) -> Optional[List[Film]]:
+    ) -> Optional[list[Film]]:
         """Функция для поиска фильмов в elasticsearch в соот. фильтрам."""
         if search_filter:
             filter_nested_values = FilterNestedValues.get_values()
@@ -229,7 +229,7 @@ class FilmService:
 
         return person
 
-    async def _get_by_person_ids_from_elastic(self, person_ids: List[str]) -> dict:
+    async def _get_by_person_ids_from_elastic(self, person_ids: list[str]) -> dict:
         """Возвращает результат запроса к elastic для поиска персон."""
         return await self.search_engine_service.search(
             query={
@@ -278,7 +278,7 @@ class FilmService:
         films = [Film.parse_raw(item) for item in data]
         return reversed(films)
 
-    async def _put_films_to_cache(self, films: List[Film], url: str):
+    async def _put_films_to_cache(self, films: list[Film], url: str):
         """Функция кладёт список фильмов в кэш."""
         data = [item.json() for item in films]
         await self.cache_service.lpush(
@@ -294,7 +294,7 @@ class FilmService:
         persons = [Person.parse_raw(item) for item in data]
         return list(reversed(persons))
 
-    async def _put_persons_to_cache(self, persons: List[Person], url: str):
+    async def _put_persons_to_cache(self, persons: list[Person], url: str):
         """Функция кладёт список персон в кэш."""
         data = [item.json() for item in persons]
         await self.cache_service.lpush(url, *data)

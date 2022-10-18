@@ -1,7 +1,7 @@
 import asyncio
 import json
 from asyncio import AbstractEventLoop
-from typing import List, AsyncIterator, Callable
+from typing import AsyncIterator, Callable
 
 import aioredis
 import pytest
@@ -40,7 +40,7 @@ async def create_index(es, index_name, index_json_path):
 async def es_write_data(es_client: AsyncElasticsearch) -> Callable:
     """Фикстура записи данных в es."""
 
-    async def inner(data: List[dict], es_index: str, index_json_path: str):
+    async def inner(data: list[dict], es_index: str, index_json_path: str):
         """Внутренний метод для записи списка данных одним запросом в es."""
         await create_index(es_client, es_index, index_json_path)
         await async_bulk(

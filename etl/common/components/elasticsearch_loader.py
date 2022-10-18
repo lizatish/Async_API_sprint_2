@@ -1,6 +1,6 @@
 """Описание класса ETL-пайплайна по сохранению данных в elasticsearch.."""
 import json
-from typing import Iterator, List
+from typing import Iterator
 
 import elastic_transport
 import elasticsearch
@@ -42,7 +42,7 @@ class ElasticsearchLoader:
             )
 
     @backoff(elastic_transport.ConnectionError)
-    def write_to_index(self, docs: List[dict]):
+    def write_to_index(self, docs: list[dict]):
         """Записывает подготовленные документы в elasticsearch.
 
         Args:
@@ -52,7 +52,7 @@ class ElasticsearchLoader:
         docs_size = len(docs)
         logger.warning(f'Write {docs_size} docs into elastic.')
 
-    def generate_data(self, docs: List[dict]) -> Iterator[dict]:
+    def generate_data(self, docs: list[dict]) -> Iterator[dict]:
         """Генерирует документы для bulk запроса.
 
         Args:

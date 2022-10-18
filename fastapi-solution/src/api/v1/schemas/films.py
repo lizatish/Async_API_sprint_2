@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -24,10 +24,10 @@ class Film(BaseModel):
     title: str
     imdb_rating: float
     description: Optional[str]
-    genres: List[Genre] = []
-    actors: List[Person] = []
-    writers: List[Person] = []
-    directors: List[Person] = []
+    genres: list[Genre] = []
+    actors: list[Person] = []
+    writers: list[Person] = []
+    directors: list[Person] = []
 
 
 class ShortFilm(BaseModel):

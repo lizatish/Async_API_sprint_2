@@ -1,5 +1,5 @@
 from functools import lru_cache
-from typing import Optional, List
+from typing import Optional
 
 from fastapi import Depends
 
@@ -33,7 +33,7 @@ class PersonService:
             await self._put_person_to_cache(person.id, person)
         return person
 
-    async def search_person(self, query: str, from_: int, size: int, url: str) -> Optional[List[Person]]:
+    async def search_person(self, query: str, from_: int, size: int, url: str) -> Optional[list[Person]]:
         """Возвращает совпадения по персоне."""
         persons = await self._persons_from_cache(url)
         if not persons:
@@ -43,7 +43,7 @@ class PersonService:
             await self._put_persons_to_cache(persons, url)
         return persons
 
-    async def _search_person_from_elastic(self, query: str, from_: int, size: int) -> List[Person]:
+    async def _search_person_from_elastic(self, query: str, from_: int, size: int) -> list[Person]:
         """Ищет данные по персоне в индексе персон."""
         if query:
             doc = await self.search_engine_service.search(
@@ -118,7 +118,7 @@ class PersonService:
 
         return person
 
-    async def enrich_persons_list_data(self, persons: List[Person], fw_person_info: List[Person], url) -> List[Person]:
+    async def enrich_persons_list_data(self, persons: list[Person], fw_person_info: list[Person], url) -> list[Person]:
         """Возвращает полный список персон с расширенными данными."""
         enriched_url = f'enriched_{url}'
         full_persons = await self._persons_from_cache(enriched_url)
@@ -141,7 +141,7 @@ class PersonService:
         persons = [Person.parse_raw(item) for item in data]
         return list(reversed(persons))
 
-    async def _put_persons_to_cache(self, persons: List[Person], url: str):
+    async def _put_persons_to_cache(self, persons: list[Person], url: str):
         """Функция кладёт список персон в кэш."""
         data = [item.json() for item in persons]
         await self.cache_service.lpush(url, *data)
