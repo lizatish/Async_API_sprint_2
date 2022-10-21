@@ -1,6 +1,6 @@
 from typing import Iterator
 
-from etl.common.models.general import Person
+from common.models.general import Person
 
 
 class Transform:
